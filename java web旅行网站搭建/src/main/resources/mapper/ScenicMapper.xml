@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.travel.mapper.ScenicMapper">
+    
+    <resultMap id="BaseResultMap" type="com.travel.entity.Scenic">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="city" property="city"/>
+        <result column="province" property="province"/>
+        <result column="content" property="content"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="address" property="address"/>
+        <result column="ticket_price" property="ticketPrice"/>
+        <result column="rating" property="rating"/>
+        <result column="scenic_level" property="scenicLevel"/>
+        <result column="scenic_type" property="scenicType"/>
+        <result column="best_season" property="bestSeason"/>
+        <result column="open_time" property="openTime"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="is_api" property="isApi"/>
+        <result column="api_id" property="apiId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE id = #{id}
+    </select>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM scenic ORDER BY rating DESC, view_count DESC
+    </select>
+    
+    <select id="search" resultMap="BaseResultMap">
+        SELECT * FROM scenic
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="city != null and city != ''">
+                AND city LIKE CONCAT('%', #{city}, '%')
+            </if>
+            <if test="scenicType != null and scenicType != ''">
+                AND scenic_type = #{scenicType}
+            </if>
+        </where>
+        ORDER BY rating DESC, view_count DESC
+    </select>
+    
+    <select id="findByFilter" resultMap="BaseResultMap">
+        SELECT * FROM scenic
+        <where>
+            <if test="city != null and city != ''">
+                AND city = #{city}
+            </if>
+            <if test="scenicLevel != null and scenicLevel != ''">
+                AND scenic_level = #{scenicLevel}
+            </if>
+            <if test="scenicType != null and scenicType != ''">
+                AND scenic_type = #{scenicType}
+            </if>
+            <if test="bestSeason != null and bestSeason != ''">
+                AND best_season LIKE CONCAT('%', #{bestSeason}, '%')
+            </if>
+            <if test="isFree != null and isFree == true">
+                AND ticket_price = 0
+            </if>
+            <if test="isFree != null and isFree == false">
+                AND ticket_price > 0
+            </if>
+        </where>
+        ORDER BY rating DESC, view_count DESC
+    </select>
+    
+    <select id="findTopByRating" resultMap="BaseResultMap">
+        SELECT * FROM scenic ORDER BY rating DESC, view_count DESC LIMIT #{limit}
+    </select>
+    
+    <select id="findTopByViewCount" resultMap="BaseResultMap">
+        SELECT * FROM scenic ORDER BY view_count DESC LIMIT #{limit}
+    </select>
+    
+    <select id="findByCity" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE city = #{city}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+        ORDER BY rating DESC LIMIT 6
+    </select>
+    
+    <select id="findByType" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE scenic_type = #{scenicType}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+        ORDER BY rating DESC LIMIT 6
+    </select>
+    
+    <select id="findByIds" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    
+    <insert id="insert" parameterType="com.travel.entity.Scenic" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO scenic (name, city, province, content, cover_image, address, ticket_price, rating, 
+                           scenic_level, scenic_type, best_season, open_time, view_count, is_api, api_id)
+        VALUES (#{name}, #{city}, #{province}, #{content}, #{coverImage}, #{address}, #{ticketPrice}, #{rating},
+                #{scenicLevel}, #{scenicType}, #{bestSeason}, #{openTime}, IFNULL(#{viewCount}, 0), IFNULL(#{isApi}, 0), #{apiId})
+    </insert>
+    
+    <update id="update" parameterType="com.travel.entity.Scenic">
+        UPDATE scenic
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="province != null">province = #{province},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="coverImage != null">cover_image = #{coverImage},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="ticketPrice != null">ticket_price = #{ticketPrice},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="scenicLevel != null">scenic_level = #{scenicLevel},</if>
+            <if test="scenicType != null">scenic_type = #{scenicType},</if>
+            <if test="bestSeason != null">best_season = #{bestSeason},</if>
+            <if test="openTime != null">open_time = #{openTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="delete">
+        DELETE FROM scenic WHERE id = #{id}
+    </delete>
+    
+    <update id="incrementViewCount">
+        UPDATE scenic SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+    
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM scenic
+    </select>
+
+    <select id="findByApiId" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE api_id = #{apiId} LIMIT 1
+    </select>
+    
+    <select id="findByNameAndCity" resultMap="BaseResultMap">
+        SELECT * FROM scenic WHERE name = #{name} AND city = #{city} LIMIT 1
+    </select>
+    
+    <select id="findAllCities" resultType="string">
+        SELECT DISTINCT city FROM scenic WHERE city IS NOT NULL AND city != '' ORDER BY city
+    </select>
+
+    <select id="findRecommendedByCitiesOrTypes" resultMap="BaseResultMap">
+        SELECT *
+        FROM scenic
+        <where>
+            <if test="excludeIds != null and !excludeIds.isEmpty()">
+                id NOT IN
+                <foreach collection="excludeIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="(cities != null and !cities.isEmpty()) or (types != null and !types.isEmpty())">
+                <if test="excludeIds != null and !excludeIds.isEmpty()">
+                    AND
+                </if>
+                (
+                    <if test="cities != null and !cities.isEmpty()">
+                        city IN
+                        <foreach collection="cities" item="city" open="(" separator="," close=")">
+                            #{city}
+                        </foreach>
+                    </if>
+                    <if test="cities != null and !cities.isEmpty() and types != null and !types.isEmpty()">
+                        OR
+                    </if>
+                    <if test="types != null and !types.isEmpty()">
+                        scenic_type IN
+                        <foreach collection="types" item="type" open="(" separator="," close=")">
+                            #{type}
+                        </foreach>
+                    </if>
+                )
+            </if>
+        </where>
+        ORDER BY rating DESC, view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findTopByRatingExcludingIds" resultMap="BaseResultMap">
+        SELECT *
+        FROM scenic
+        <if test="excludeIds != null and !excludeIds.isEmpty()">
+            WHERE id NOT IN
+            <foreach collection="excludeIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        ORDER BY rating DESC, view_count DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

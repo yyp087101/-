@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- 后台侧边栏 -->
+<div th:fragment="sidebar" class="admin-sidebar">
+    <div class="sidebar-header">
+        <i class="bi bi-globe-americas me-2" style="color:#f59e0b;"></i>
+        <span class="fw-bold">畅游中国</span>
+        <small class="d-block text-white-50 mt-1">管理后台 v1.0</small>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="sidebar-link">
+            <i class="bi bi-speedometer2"></i><span>控制台</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <small class="sidebar-label">内容管理</small>
+        <a href="/admin/scenic/list" class="sidebar-link">
+            <i class="bi bi-map"></i><span>景点管理</span>
+        </a>
+        <a href="/admin/scenic/import" class="sidebar-link">
+            <i class="bi bi-upload"></i><span>景点导入</span>
+        </a>
+        <a href="/admin/comment/list" class="sidebar-link">
+            <i class="bi bi-chat-dots"></i><span>评论管理</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <small class="sidebar-label">系统管理</small>
+        <a href="/admin/user/list" class="sidebar-link">
+            <i class="bi bi-people"></i><span>用户管理</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <a href="/" class="sidebar-link" target="_blank">
+            <i class="bi bi-box-arrow-up-right"></i><span>前台首页</span>
+        </a>
+        <a href="/admin/logout" class="sidebar-link text-danger">
+            <i class="bi bi-box-arrow-right"></i><span>退出登录</span>
+        </a>
+    </nav>
+</div>
+
+<!-- 后台样式 -->
+<style th:fragment="admin-style">
+    .admin-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+    .admin-sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        overflow-y: auto;
+    }
+    .sidebar-header {
+        padding: 1.5rem;
+        font-size: 1.3rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-nav {
+        padding: 1rem 0;
+    }
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: all 0.3s;
+        font-size: 0.92rem;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+        color: #fff;
+        background: rgba(37,99,235,0.3);
+        border-left: 3px solid #2563eb;
+    }
+    .sidebar-link i {
+        width: 28px;
+        font-size: 1.1rem;
+        margin-right: 10px;
+    }
+    .sidebar-divider {
+        border-top: 1px solid rgba(255,255,255,0.06);
+        margin: 0.5rem 0;
+    }
+    .sidebar-label {
+        display: block;
+        padding: 0.5rem 1.5rem;
+        color: rgba(255,255,255,0.35);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .admin-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 2rem;
+        background: #f1f5f9;
+        min-height: 100vh;
+    }
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .admin-header h2 {
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+    .stat-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-4px); }
+    .stat-card .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .admin-table {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .admin-table table {
+        margin-bottom: 0;
+    }
+    .admin-table th {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .admin-table td {
+        vertical-align: middle;
+        padding: 0.85rem;
+    }
+</style>
+</html>

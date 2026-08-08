@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('用户管理 - 畅游中国后台')"></head>
+<body>
+<style th:replace="fragments/admin-layout :: admin-style"></style>
+
+<div class="admin-layout">
+    <div th:replace="fragments/admin-layout :: sidebar"></div>
+    
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2><i class="bi bi-people me-2"></i>用户管理</h2>
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2" style="border-radius:20px;"
+                  th:text="'共 ' + ${users != null ? users.size() : 0} + ' 位用户'"></span>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" style="border-radius:12px;">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="admin-table">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>昵称</th>
+                            <th>邮箱</th>
+                            <th>手机号</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                    <strong th:text="${user.username}"></strong>
+                                </div>
+                            </td>
+                            <td th:text="${user.nickname}"></td>
+                            <td class="small" th:text="${user.email != null ? user.email : '-'}"></td>
+                            <td class="small" th:text="${user.phone != null ? user.phone : '-'}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${user.role == 1 ? 'bg-primary' : 'bg-secondary'}" 
+                                      th:text="${user.role == 1 ? '管理员' : '普通用户'}"></span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${user.status == 1 ? 'bg-success' : 'bg-danger'}" 
+                                      th:text="${user.status == 1 ? '正常' : '已禁用'}"></span>
+                            </td>
+                            <td class="small text-muted" th:text="${#dates.format(user.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <a th:if="${user.role != 1}" th:href="@{/admin/user/toggle/{id}(id=${user.id})}" 
+                                   class="btn btn-sm" style="border-radius:8px;"
+                                   th:classappend="${user.status == 1 ? 'btn-outline-danger' : 'btn-outline-success'}"
+                                   th:text="${user.status == 1 ? '禁用' : '启用'}"
+                                   onclick="return confirm('确认修改该用户状态吗？');"></a>
+                                <span th:if="${user.role == 1}" class="text-muted small">-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div th:if="${users == null || users.isEmpty()}" class="text-center py-4">
+                <i class="bi bi-people" style="font-size:3rem;color:#cbd5e1;"></i>
+                <p class="text-muted mt-2">暂无用户</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

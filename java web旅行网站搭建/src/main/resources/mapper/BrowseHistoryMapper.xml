@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.travel.mapper.BrowseHistoryMapper">
+    
+    <insert id="insert">
+        INSERT INTO browse_history (user_id, scenic_id) VALUES (#{userId}, #{scenicId})
+    </insert>
+    
+    <select id="findByUserId" resultType="com.travel.entity.BrowseHistory">
+        SELECT * FROM browse_history WHERE user_id = #{userId} ORDER BY browse_time DESC
+    </select>
+    
+    <select id="findRecentScenicIdsByUserId" resultType="int">
+        SELECT scenic_id
+        FROM browse_history
+        WHERE user_id = #{userId}
+        GROUP BY scenic_id
+        ORDER BY MAX(browse_time) DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('控制台 - 畅游中国后台')"></head>
+<body>
+<style th:replace="fragments/admin-layout :: admin-style"></style>
+
+<div class="admin-layout">
+    <div th:replace="fragments/admin-layout :: sidebar"></div>
+    
+    <div class="admin-content">
+        <div class="admin-header">
+            <div>
+                <h2><i class="bi bi-speedometer2 me-2"></i>控制台</h2>
+                <p class="text-muted mb-0">欢迎回来，<span th:text="${session.admin.nickname}">管理员</span>。这里是系统管理总览。</p>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2" style="border-radius:20px;">
+                <i class="bi bi-calendar3 me-1"></i>2026 年
+            </span>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon" style="background:rgba(37,99,235,0.1);color:#2563eb;">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="ms-3">
+                            <p class="text-muted mb-0 small">注册用户</p>
+                            <h3 class="fw-bold mb-0" th:text="${userCount}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981;">
+                            <i class="bi bi-map-fill"></i>
+                        </div>
+                        <div class="ms-3">
+                            <p class="text-muted mb-0 small">景点总数</p>
+                            <h3 class="fw-bold mb-0" th:text="${scenicCount}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </div>
+                        <div class="ms-3">
+                            <p class="text-muted mb-0 small">评论总数</p>
+                            <h3 class="fw-bold mb-0" th:text="${commentCount}">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷操作 -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-lightning-fill text-warning me-2"></i>快捷操作</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/admin/scenic/add" class="btn btn-outline-primary" style="border-radius:10px;">
+                            <i class="bi bi-plus-circle me-1"></i>新增景点
+                        </a>
+                        <a href="/admin/scenic/import" class="btn btn-outline-success" style="border-radius:10px;">
+                            <i class="bi bi-upload me-1"></i>景点导入
+                        </a>
+                        <a href="/admin/comment/list" class="btn btn-outline-warning" style="border-radius:10px;">
+                            <i class="bi bi-chat-dots me-1"></i>评论管理
+                        </a>
+                        <a href="/admin/user/list" class="btn btn-outline-info" style="border-radius:10px;">
+                            <i class="bi bi-people me-1"></i>用户管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary me-2"></i>系统信息</h5>
+                    <table class="table table-borderless table-sm mb-0">
+                        <tr><td class="text-muted">项目名称</td><td>畅游中国旅行推荐网站</td></tr>
+                        <tr><td class="text-muted">技术栈</td><td>Spring Boot + MyBatis + Thymeleaf</td></tr>
+                        <tr><td class="text-muted">地图服务</td><td>高德地图（按需搜索补全）</td></tr>
+                        <tr><td class="text-muted">图片管理</td><td>本地上传 / 默认封面</td></tr>
+                        <tr><td class="text-muted">当前版本</td><td>v1.0 (2026)</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

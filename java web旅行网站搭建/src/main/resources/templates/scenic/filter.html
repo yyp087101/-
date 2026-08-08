@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('景点筛选 - 畅游中国')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<div style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);padding:3rem 0;color:#fff;">
+    <div class="container">
+        <h1 class="fw-bold"><i class="bi bi-funnel me-2"></i>景点筛选</h1>
+        <p class="mb-0 opacity-75">多维度精准筛选景点，快速找到理想行程</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- 筛选表单 -->
+    <div class="search-box mb-4">
+        <form action="/scenic/filter" method="get">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-geo-alt me-1"></i>城市</label>
+                    <select name="city" class="form-select">
+                        <option value="">全部城市</option>
+                        <option th:each="c : ${cities}" th:value="${c}" th:text="${c}" th:selected="${c == city}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-award me-1"></i>景区等级</label>
+                    <select name="scenicLevel" class="form-select">
+                        <option value="">全部等级</option>
+                        <option value="5A" th:selected="${scenicLevel == '5A'}">5A 景区</option>
+                        <option value="4A" th:selected="${scenicLevel == '4A'}">4A 景区</option>
+                        <option value="3A" th:selected="${scenicLevel == '3A'}">3A 景区</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-tag me-1"></i>景点类型</label>
+                    <select name="scenicType" class="form-select">
+                        <option value="">全部类型</option>
+                        <option value="自然" th:selected="${scenicType == '自然'}">自然景观</option>
+                        <option value="人文" th:selected="${scenicType == '人文'}">人文景观</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-sun me-1"></i>最佳季节</label>
+                    <select name="bestSeason" class="form-select">
+                        <option value="">全部季节</option>
+                        <option value="春" th:selected="${bestSeason == '春'}">春季</option>
+                        <option value="夏" th:selected="${bestSeason == '夏'}">夏季</option>
+                        <option value="秋" th:selected="${bestSeason == '秋'}">秋季</option>
+                        <option value="冬" th:selected="${bestSeason == '冬'}">冬季</option>
+                        <option value="四季" th:selected="${bestSeason == '四季'}">四季皆宜</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-currency-yen me-1"></i>门票价格</label>
+                    <select name="isFree" class="form-select">
+                        <option value="">不限</option>
+                        <option value="true" th:selected="${isFree != null && isFree}">免费景点</option>
+                        <option value="false" th:selected="${isFree != null && !isFree}">收费景点</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-fill">
+                        <i class="bi bi-funnel me-1"></i>筛选
+                    </button>
+                    <a href="/scenic/filter" class="btn btn-outline-secondary" style="border-radius:10px;padding:10px 20px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> 重置
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 筛选结果 -->
+    <div class="mb-3">
+        <p class="text-muted">共找到 <strong class="text-primary" th:text="${pageInfo.total}">0</strong> 个景点</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6" th:each="scenic : ${pageInfo.list}">
+            <div class="scenic-card card">
+                <div class="card-img-wrapper">
+                    <img th:src="${scenic.coverImage != null ? scenic.coverImage : '/images/scenic/1.jpg'}" 
+                         class="card-img-top" th:alt="${scenic.name}"
+                         onerror="this.src='/images/scenic/1.jpg'">
+                    <span class="card-badge" th:if="${scenic.scenicLevel != null}" th:text="${scenic.scenicLevel}"></span>
+                    <span class="card-price" th:text="${scenic.ticketPrice != null && scenic.ticketPrice > 0} ? '¥' + ${scenic.ticketPrice} : '免费'"></span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="text-decoration-none text-dark" th:text="${scenic.name}"></a>
+                    </h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="rating-stars me-2">
+                            <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, scenic.rating != null ? scenic.rating.intValue() : 5)}"></i>
+                        </span>
+                        <small class="text-muted" th:text="${scenic.rating}"></small>
+                        <small class="text-muted ms-auto"><i class="bi bi-eye me-1"></i><span th:text="${scenic.viewCount}"></span></small>
+                    </div>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                        <span th:text="${scenic.province + ' · ' + scenic.city}"></span>
+                    </p>
+                    <div class="mb-2">
+                        <span class="badge bg-info bg-opacity-10 text-info me-1" th:if="${scenic.scenicType != null}" th:text="${scenic.scenicType}"></span>
+                        <span class="badge bg-success bg-opacity-10 text-success" th:if="${scenic.bestSeason != null}" th:text="${scenic.bestSeason}"></span>
+                    </div>
+                    <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-primary" style="border-radius:20px;">
+                        查看详情 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${pageInfo.list == null || pageInfo.list.isEmpty()}" class="text-center py-5">
+        <i class="bi bi-funnel" style="font-size:4rem;color:#cbd5e1;"></i>
+        <h4 class="text-muted mt-3">未找到符合条件的景点</h4>
+        <p class="text-muted">请尝试调整筛选条件</p>
+    </div>
+    
+    <!-- 分页 -->
+    <nav th:if="${pageInfo.pages > 1}" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${pageInfo.pageNum == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/scenic/filter(city=${city},scenicLevel=${scenicLevel},scenicType=${scenicType},bestSeason=${bestSeason},isFree=${isFree},pageNum=${pageInfo.pageNum - 1})}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(1, pageInfo.pages)}" th:classappend="${i == pageInfo.pageNum ? 'active' : ''}">
+                <a class="page-link" th:href="@{/scenic/filter(city=${city},scenicLevel=${scenicLevel},scenicType=${scenicType},bestSeason=${bestSeason},isFree=${isFree},pageNum=${i})}" th:text="${i}"></a>
+            </li>
+            <li class="page-item" th:classappend="${pageInfo.pageNum == pageInfo.pages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/scenic/filter(city=${city},scenicLevel=${scenicLevel},scenicType=${scenicType},bestSeason=${bestSeason},isFree=${isFree},pageNum=${pageInfo.pageNum + 1})}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

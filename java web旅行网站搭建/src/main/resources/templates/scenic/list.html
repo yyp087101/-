@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('全部景点 - 畅游中国')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<!-- 页面横幅 -->
+<div style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);padding:3rem 0;color:#fff;">
+    <div class="container">
+        <h1 class="fw-bold"><i class="bi bi-map me-2"></i>全部景点</h1>
+        <p class="mb-0 opacity-75">探索全国各地精选景点，找到属于你的诗和远方</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- 景点列表 -->
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6" th:each="scenic : ${pageInfo.list}">
+            <div class="scenic-card card">
+                <div class="card-img-wrapper">
+                    <img th:src="${scenic.coverImage != null ? scenic.coverImage : '/images/scenic/1.jpg'}" 
+                         class="card-img-top" th:alt="${scenic.name}"
+                         onerror="this.src='/images/scenic/1.jpg'">
+                    <span class="card-badge" th:if="${scenic.scenicLevel != null}" th:text="${scenic.scenicLevel}"></span>
+                    <span class="card-price" th:text="${scenic.ticketPrice != null && scenic.ticketPrice > 0} ? '¥' + ${scenic.ticketPrice} : '免费'"></span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="text-decoration-none text-dark" th:text="${scenic.name}"></a>
+                    </h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="rating-stars me-2">
+                            <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, scenic.rating != null ? scenic.rating.intValue() : 5)}"></i>
+                        </span>
+                        <small class="text-muted" th:text="${scenic.rating}"></small>
+                        <small class="text-muted ms-auto"><i class="bi bi-eye me-1"></i><span th:text="${scenic.viewCount}"></span></small>
+                    </div>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                        <span th:text="${scenic.province + ' · ' + scenic.city}"></span>
+                    </p>
+                    <p class="card-text" th:if="${scenic.scenicType != null}">
+                        <span class="badge bg-info bg-opacity-10 text-info" th:text="${scenic.scenicType}"></span>
+                        <span class="badge bg-success bg-opacity-10 text-success" th:if="${scenic.bestSeason != null}" th:text="${scenic.bestSeason}"></span>
+                    </p>
+                    <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-primary mt-1" style="border-radius:20px;">
+                        查看详情 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 空状态 -->
+    <div th:if="${pageInfo.list == null || pageInfo.list.isEmpty()}" class="text-center py-5">
+        <i class="bi bi-inbox" style="font-size:4rem;color:#cbd5e1;"></i>
+        <h4 class="text-muted mt-3">暂无景点数据</h4>
+    </div>
+    
+    <!-- 分页 -->
+    <nav th:if="${pageInfo.pages > 1}" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${pageInfo.pageNum == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/scenic/list(pageNum=${pageInfo.pageNum - 1})}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(1, pageInfo.pages)}" th:classappend="${i == pageInfo.pageNum ? 'active' : ''}">
+                <a class="page-link" th:href="@{/scenic/list(pageNum=${i})}" th:text="${i}"></a>
+            </li>
+            <li class="page-item" th:classappend="${pageInfo.pageNum == pageInfo.pages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/scenic/list(pageNum=${pageInfo.pageNum + 1})}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

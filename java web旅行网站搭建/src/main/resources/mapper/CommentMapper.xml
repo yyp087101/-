@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.travel.mapper.CommentMapper">
+    
+    <resultMap id="BaseResultMap" type="com.travel.entity.Comment">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="scenic_id" property="scenicId"/>
+        <result column="content" property="content"/>
+        <result column="rating" property="rating"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <association property="user" javaType="com.travel.entity.User">
+            <id column="u_id" property="id"/>
+            <result column="u_nickname" property="nickname"/>
+            <result column="u_avatar" property="avatar"/>
+        </association>
+        <association property="scenic" javaType="com.travel.entity.Scenic">
+            <id column="s_id" property="id"/>
+            <result column="s_name" property="name"/>
+        </association>
+    </resultMap>
+    
+    <insert id="insert" parameterType="com.travel.entity.Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment (user_id, scenic_id, content, rating) VALUES (#{userId}, #{scenicId}, #{content}, #{rating})
+    </insert>
+    
+    <delete id="deleteById">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+    
+    <update id="updateStatus">
+        UPDATE comment SET status = #{status} WHERE id = #{id}
+    </update>
+    
+    <select id="findByScenicId" resultMap="BaseResultMap">
+        SELECT c.*, u.id as u_id, u.nickname as u_nickname, u.avatar as u_avatar
+        FROM comment c LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.scenic_id = #{scenicId} AND c.status = 1
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT c.*, u.id as u_id, u.nickname as u_nickname, u.avatar as u_avatar,
+               s.id as s_id, s.name as s_name
+        FROM comment c 
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN scenic s ON c.scenic_id = s.id
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <select id="countByScenicId" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE scenic_id = #{scenicId} AND status = 1
+    </select>
+    
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM comment
+    </select>
+    
+    <select id="avgRatingByScenicId" resultType="java.lang.Double">
+        SELECT AVG(rating) FROM comment WHERE scenic_id = #{scenicId} AND status = 1
+    </select>
+</mapper>

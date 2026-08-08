@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('用户注册 - 畅游中国')"></head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-globe-americas" style="font-size:3rem;color:#2563eb;"></i>
+                        <h3 class="fw-bold mt-2">创建新账号</h3>
+                        <p class="text-muted">加入畅游中国，发现更多精彩旅程</p>
+                    </div>
+                    
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" style="border-radius:12px;">
+                        <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    
+                    <form action="/user/register" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-person me-1"></i>用户名 <span class="text-danger">*</span></label>
+                                <input type="text" name="username" class="form-control" placeholder="请输入用户名" required
+                                       style="border-radius:12px; padding:10px 16px; border:2px solid #e2e8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-emoji-smile me-1"></i>昵称 <span class="text-danger">*</span></label>
+                                <input type="text" name="nickname" class="form-control" placeholder="给自己取一个昵称" required
+                                       style="border-radius:12px; padding:10px 16px; border:2px solid #e2e8f0;">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold"><i class="bi bi-lock me-1"></i>密码 <span class="text-danger">*</span></label>
+                                <input type="password" name="password" class="form-control" placeholder="请设置密码（6位以上）" required minlength="6"
+                                       style="border-radius:12px; padding:10px 16px; border:2px solid #e2e8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-envelope me-1"></i>邮箱</label>
+                                <input type="email" name="email" class="form-control" placeholder="选填"
+                                       style="border-radius:12px; padding:10px 16px; border:2px solid #e2e8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-phone me-1"></i>手机号</label>
+                                <input type="text" name="phone" class="form-control" placeholder="选填"
+                                       style="border-radius:12px; padding:10px 16px; border:2px solid #e2e8f0;">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-4" 
+                                style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:12px;padding:12px;font-weight:700;font-size:1.05rem;">
+                            <i class="bi bi-person-plus me-2"></i>立即注册
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <span class="text-muted">已有账号？</span>
+                        <a href="/user/login" class="fw-bold text-decoration-none" style="color:#2563eb;">去登录</a>
+                    </div>
+                    <div class="text-center mt-2">
+                        <a href="/" class="text-muted text-decoration-none small">
+                            <i class="bi bi-arrow-left me-1"></i>返回首页
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

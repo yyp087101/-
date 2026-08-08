@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('景点导入 - 畅游中国后台')"></head>
+<body>
+<style th:replace="fragments/admin-layout :: admin-style"></style>
+
+<div class="admin-layout">
+    <div th:replace="fragments/admin-layout :: sidebar"></div>
+
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2><i class="bi bi-upload me-2"></i>景点导入</h2>
+            <a href="/admin/scenic/list" class="btn btn-outline-secondary" style="border-radius:10px;">
+                <i class="bi bi-arrow-left me-1"></i>返回列表
+            </a>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" style="border-radius:12px;">
+            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="admin-table">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-card-checklist text-primary me-2"></i>上传景点信息与图片</h5>
+                    <p class="text-muted small mb-4">
+                        该页面不再请求外部地图接口。
+                        <br>每次提交导入 1 个景点，图片会保存到本地服务器目录并自动生成访问地址。
+                        <br>封面图支持上传文件，也可以直接填写已有图片 URL；如果两者同时填写，以上传文件为准。
+                    </p>
+
+                    <form action="/admin/scenic/import" method="post" enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">景点名称 <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" required
+                                       th:value="${scenic.name}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">所在城市</label>
+                                <input type="text" name="city" class="form-control"
+                                       th:value="${scenic.city}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">所在省份</label>
+                                <input type="text" name="province" class="form-control"
+                                       th:value="${scenic.province}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">详细地址</label>
+                                <input type="text" name="address" class="form-control"
+                                       th:value="${scenic.address}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">景区等级</label>
+                                <select name="scenicLevel" class="form-select" style="border-radius:10px;padding:10px 16px;">
+                                    <option value="">未设置</option>
+                                    <option value="5A" th:selected="${scenic.scenicLevel == '5A'}">5A</option>
+                                    <option value="4A" th:selected="${scenic.scenicLevel == '4A'}">4A</option>
+                                    <option value="3A" th:selected="${scenic.scenicLevel == '3A'}">3A</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">景点类型</label>
+                                <select name="scenicType" class="form-select" style="border-radius:10px;padding:10px 16px;">
+                                    <option value="">未设置</option>
+                                    <option value="自然" th:selected="${scenic.scenicType == '自然'}">自然景观</option>
+                                    <option value="人文" th:selected="${scenic.scenicType == '人文'}">人文景观</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">门票价格 (元)</label>
+                                <input type="number" name="ticketPrice" class="form-control" step="0.01" min="0"
+                                       th:value="${scenic.ticketPrice != null ? scenic.ticketPrice : '0'}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">评分</label>
+                                <input type="number" name="rating" class="form-control" step="0.1" min="0" max="5"
+                                       th:value="${scenic.rating != null ? scenic.rating : '4.5'}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">最佳季节</label>
+                                <input type="text" name="bestSeason" class="form-control" placeholder="如：四季皆宜"
+                                       th:value="${scenic.bestSeason}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">开放时间</label>
+                                <input type="text" name="openTime" class="form-control" placeholder="如：08:00-17:30"
+                                       th:value="${scenic.openTime}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">上传封面图片</label>
+                                <input type="file" name="imageFile" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp"
+                                       style="border-radius:10px;padding:10px 16px;">
+                                <div class="form-text">支持 JPG、PNG、GIF、WEBP，单张不超过 10MB。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">封面图片 URL</label>
+                                <input type="text" name="coverImage" class="form-control" placeholder="可选：填写已有图片地址"
+                                       th:value="${scenic.coverImage}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">景点介绍</label>
+                                <textarea name="content" class="form-control" rows="6"
+                                          style="border-radius:10px;padding:10px 16px;"
+                                          th:text="${scenic.content}"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-upload me-1"></i>上传并导入
+                            </button>
+                            <a href="/admin/scenic/add" class="btn btn-outline-primary" style="border-radius:10px;">
+                                <i class="bi bi-pencil-square me-1"></i>切换到常规新增
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="admin-table h-100">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-info me-2"></i>导入说明</h5>
+                    <div class="small text-muted">
+                        <p><strong class="text-dark">当前模式：</strong>本地上传</p>
+                        <p><strong class="text-dark">图片存储：</strong>上传后的文件会写入 <code>/uploads/scenic/</code> 目录并通过站内地址访问。</p>
+                        <p><strong class="text-dark">字段要求：</strong>景点名称必填，其余信息可按需要补充。</p>
+                        <p><strong class="text-dark">导入结果：</strong>景点会以写入数据库，在景点管理列表中可继续编辑。</p>
+
+                        <div class="alert alert-warning small mt-3 mb-0" style="border-radius:10px;">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            如果上传新图片，系统会优先使用本地图片地址；未提供图片时会回退到默认封面。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

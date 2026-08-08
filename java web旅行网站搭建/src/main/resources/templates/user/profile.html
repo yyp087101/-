@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('个人中心 - 畅游中国')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius:16px;">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-person-circle" style="font-size:5rem;color:#2563eb;"></i>
+                    <h4 class="fw-bold mt-3" th:text="${userInfo.nickname}">用户</h4>
+                    <p class="text-muted" th:text="'@' + ${userInfo.username}">@username</p>
+                    <div class="d-flex justify-content-center gap-4 mt-3">
+                        <div class="text-center">
+                            <span class="badge bg-primary rounded-pill px-3 py-2" th:text="${userInfo.role == 1 ? '管理员' : '普通用户'}">普通用户</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="badge rounded-pill px-3 py-2" th:classappend="${userInfo.status == 1 ? 'bg-success' : 'bg-danger'}" 
+                                  th:text="${userInfo.status == 1 ? '正常' : '已禁用'}">正常</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mt-3">
+                        <i class="bi bi-clock me-1"></i>注册时间：<span th:text="${#dates.format(userInfo.createTime, 'yyyy-MM-dd')}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" style="border-radius:12px;">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" style="border-radius:12px;">
+                <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
+            <!-- 修改个人信息 -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>修改个人信息</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/user/profile/update" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">昵称</label>
+                                <input type="text" name="nickname" class="form-control" th:value="${userInfo.nickname}" required
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">邮箱</label>
+                                <input type="email" name="email" class="form-control" th:value="${userInfo.email}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">手机号</label>
+                                <input type="text" name="phone" class="form-control" th:value="${userInfo.phone}"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom mt-3">
+                            <i class="bi bi-check-lg me-1"></i>保存修改
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 修改密码 -->
+            <div class="card border-0 shadow-sm" style="border-radius:16px;">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="fw-bold"><i class="bi bi-shield-lock me-2 text-warning"></i>修改密码</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/user/password/update" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">原密码</label>
+                                <input type="password" name="oldPassword" class="form-control" required
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">新密码</label>
+                                <input type="password" name="newPassword" class="form-control" required minlength="6"
+                                       style="border-radius:10px;padding:10px 16px;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning mt-3" style="border-radius:10px;padding:10px 28px;font-weight:600;">
+                            <i class="bi bi-key me-1"></i>修改密码
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

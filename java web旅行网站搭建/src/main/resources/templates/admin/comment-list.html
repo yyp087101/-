@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('评论管理 - 畅游中国后台')"></head>
+<body>
+<style th:replace="fragments/admin-layout :: admin-style"></style>
+
+<div class="admin-layout">
+    <div th:replace="fragments/admin-layout :: sidebar"></div>
+    
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2><i class="bi bi-chat-dots me-2"></i>评论管理</h2>
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2" style="border-radius:20px;"
+                  th:text="'共 ' + ${comments != null ? comments.size() : 0} + ' 条评论'"></span>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" style="border-radius:12px;">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="admin-table">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>景点</th>
+                            <th>评论内容</th>
+                            <th>评分</th>
+                            <th>状态</th>
+                            <th>时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="comment : ${comments}">
+                            <td th:text="${comment.id}"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                    <span th:text="${comment.user != null ? comment.user.nickname : '未知用户'}"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <a th:if="${comment.scenic != null}" th:href="@{/scenic/detail/{id}(id=${comment.scenicId})}" 
+                                   class="text-decoration-none" th:text="${comment.scenic.name}" target="_blank"></a>
+                            </td>
+                            <td>
+                                <div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" 
+                                     th:text="${comment.content}" th:title="${comment.content}"></div>
+                            </td>
+                            <td>
+                                <span class="text-warning">
+                                    <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, comment.rating)}"></i>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${comment.status == 1 ? 'bg-success' : 'bg-danger'}" 
+                                      th:text="${comment.status == 1 ? '正常' : '已删除'}"></span>
+                            </td>
+                            <td class="small text-muted" th:text="${#dates.format(comment.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <a th:href="@{/admin/comment/delete/{id}(id=${comment.id})}" 
+                                   class="btn btn-sm btn-outline-danger" style="border-radius:8px;"
+                                   onclick="return confirm('确认删除这条评论吗？');">
+                                    <i class="bi bi-trash me-1"></i>删除
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div th:if="${comments == null || comments.isEmpty()}" class="text-center py-4">
+                <i class="bi bi-chat" style="font-size:3rem;color:#cbd5e1;"></i>
+                <p class="text-muted mt-2">暂无评论</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

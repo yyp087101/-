@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head(${scenic.name} + ' - 畅游中国')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<style>
+    .detail-hero { height: 400px; background-size: cover; background-position: center; position: relative; }
+    .detail-hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%); display: flex; align-items: flex-end; }
+    .detail-info-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+    .info-item { display: flex; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
+    .info-item:last-child { border-bottom: none; }
+    .info-item i { width: 36px; font-size: 1.2rem; color: #2563eb; }
+    .comment-item { background: #f8fafc; border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+    .comment-stars { color: #f59e0b; }
+    .star-rating input { display: none; }
+    .star-rating label { font-size: 1.5rem; color: #ddd; cursor: pointer; transition: color 0.2s; }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label { color: #f59e0b; }
+    .star-rating { direction: rtl; display: inline-flex; }
+    .route-map { height: 320px; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .route-hint { color: #64748b; }
+    .route-mode-btn { border-radius: 20px; }
+    .route-mode-btn.active { background-color: #2563eb; border-color: #2563eb; color: #fff; }
+</style>
+
+<div class="detail-hero" th:style="'background-image: url(' + ${scenic.coverImage != null ? scenic.coverImage : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920'} + ')'">
+    <div class="detail-hero-overlay">
+        <div class="container pb-4 text-white">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="--bs-breadcrumb-divider-color: rgba(255,255,255,0.6);">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">首页</a></li>
+                    <li class="breadcrumb-item"><a href="/scenic/list" class="text-white-50 text-decoration-none">全部景点</a></li>
+                    <li class="breadcrumb-item active text-white" th:text="${scenic.name}"></li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold" th:text="${scenic.name}"></h1>
+            <div class="d-flex align-items-center gap-3 mt-2">
+                <span th:if="${scenic.scenicLevel != null}" class="badge bg-warning text-dark px-3 py-2" th:text="${scenic.scenicLevel}"></span>
+                <span th:if="${scenic.scenicType != null}" class="badge bg-info px-3 py-2" th:text="${scenic.scenicType}"></span>
+                <span class="rating-stars">
+                    <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, scenic.rating != null ? scenic.rating.intValue() : 5)}"></i>
+                    <span class="ms-1" th:text="${scenic.rating}"></span>
+                </span>
+                <span><i class="bi bi-eye me-1"></i><span th:text="${scenic.viewCount}"></span> 次浏览</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="detail-info-card">
+                <h4 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary me-2"></i>景点介绍</h4>
+                <p class="text-muted lh-lg" th:text="${scenic.content}" style="text-indent: 2em;">暂无介绍</p>
+            </div>
+
+            <div class="detail-info-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-sign-turn-right text-primary me-2"></i>地图与路线</h4>
+                    <span class="badge bg-light text-dark">Leaflet + OpenStreetMap</span>
+                </div>
+                <div id="routeMap" class="route-map"
+                     th:attr="data-scenic-id=${scenic.id},data-scenic-name=${scenic.name},data-scenic-address=${scenic.address},data-lat=${scenic.latitude},data-lon=${scenic.longitude}"></div>
+                <div class="row g-2 mt-2">
+                    <div class="col-md-8">
+                        <input id="routeOriginInput" class="form-control" placeholder="输入出发地（可留空使用定位）">
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button id="planRouteBtn" class="btn btn-primary-custom" type="button">规划路线</button>
+                    </div>
+                </div>
+                <div id="routeHint" class="route-hint small mt-2">留空时优先使用浏览器定位，也可输入地址或经纬度，例如 31.2304,121.4737。</div>
+                <div id="routeRecommendation" class="alert alert-info py-2 px-3 mt-3 mb-2 d-none"></div>
+                <div id="routeModes" class="d-flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="detail-info-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-chat-dots text-primary me-2"></i>游客评论</h4>
+                    <span class="badge bg-primary rounded-pill"><span th:text="${commentCount}"></span> 条评论</span>
+                </div>
+
+                <div th:if="${session.user != null}" class="mb-4 p-3 bg-light rounded-3">
+                    <h6 class="fw-bold mb-3">发表评论</h6>
+                    <form id="commentForm">
+                        <input type="hidden" name="scenicId" th:value="${scenic.id}">
+                        <div class="mb-3">
+                            <label class="form-label">评分</label>
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="rating" value="5" checked><label for="star5"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star4" name="rating" value="4"><label for="star4"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star3" name="rating" value="3"><label for="star3"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star2" name="rating" value="2"><label for="star2"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star1" name="rating" value="1"><label for="star1"><i class="bi bi-star-fill"></i></label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" placeholder="分享你的旅行体验..." required style="border-radius: 10px; border: 2px solid #e2e8f0;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom"><i class="bi bi-send me-1"></i>提交评论</button>
+                    </form>
+                </div>
+
+                <div th:if="${session.user == null}" class="text-center py-3 bg-light rounded-3 mb-3">
+                    <p class="text-muted mb-2">登录后可发表评论</p>
+                    <a href="/user/login" class="btn btn-sm btn-outline-primary" style="border-radius: 20px;">去登录</a>
+                </div>
+
+                <div th:each="comment : ${comments}" class="comment-item">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-person-circle me-2" style="font-size: 1.8rem; color: #64748b;"></i>
+                        <div>
+                            <strong th:text="${comment.user != null ? comment.user.nickname : '匿名用户'}">用户</strong>
+                            <div class="comment-stars small"><i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, comment.rating)}"></i></div>
+                        </div>
+                        <small class="text-muted ms-auto" th:text="${#dates.format(comment.createTime, 'yyyy-MM-dd HH:mm')}"></small>
+                    </div>
+                    <p class="mb-0 text-muted" th:text="${comment.content}"></p>
+                </div>
+
+                <div th:if="${comments == null || comments.isEmpty()}" class="text-center py-4">
+                    <i class="bi bi-chat" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+                    <p class="text-muted mt-2">暂无评论，快来抢沙发。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="detail-info-card" th:if="${session.user != null}">
+                <button id="favoriteBtn" class="btn w-100 mb-2"
+                        th:classappend="${scenic.isFavorited != null and scenic.isFavorited} ? 'btn-danger' : 'btn-outline-danger'"
+                        th:attr="data-id=${scenic.id}" style="border-radius: 10px; padding: 10px;">
+                    <i class="bi" th:classappend="${scenic.isFavorited != null and scenic.isFavorited} ? 'bi-heart-fill' : 'bi-heart'"></i>
+                    <span th:text="${scenic.isFavorited != null and scenic.isFavorited} ? '已收藏' : '收藏景点'">收藏景点</span>
+                </button>
+            </div>
+
+            <div class="detail-info-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-list-check text-primary me-2"></i>基本信息</h5>
+                <div class="info-item"><i class="bi bi-geo-alt"></i><div><small class="text-muted">地址</small><p class="mb-0 fw-500" th:text="${scenic.address != null ? scenic.address : ''}"></p></div></div>
+                <div class="info-item"><i class="bi bi-ticket-perforated"></i><div><small class="text-muted">门票价格</small><p class="mb-0 fw-bold" th:classappend="${scenic.ticketPrice != null and scenic.ticketPrice > 0} ? ' text-danger' : ' text-success'" th:text="${scenic.ticketPrice != null and scenic.ticketPrice > 0 ? '¥' + scenic.ticketPrice + '/人' : '免费开放'}"></p></div></div>
+                <div class="info-item" th:if="${scenic.openTime != null}"><i class="bi bi-clock"></i><div><small class="text-muted">开放时间</small><p class="mb-0" th:text="${scenic.openTime}"></p></div></div>
+                <div class="info-item" th:if="${scenic.bestSeason != null}"><i class="bi bi-sun"></i><div><small class="text-muted">最佳季节</small><p class="mb-0" th:text="${scenic.bestSeason}"></p></div></div>
+                <div class="info-item"><i class="bi bi-star"></i><div><small class="text-muted">用户评分</small><p class="mb-0 fw-bold text-warning" th:text="${avgRating}"></p></div></div>
+            </div>
+
+            <div class="detail-info-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-magic text-primary me-2"></i>相关推荐</h5>
+                <div th:each="s,iter : ${similarScenics}" th:if="${iter.index < 4 && s.id != scenic.id}" class="d-flex align-items-center mb-3">
+                    <img th:src="${s.coverImage != null ? s.coverImage : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200'}" style="width: 70px; height: 50px; object-fit: cover; border-radius: 8px;" th:alt="${s.name}" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200'">
+                    <div class="ms-3">
+                        <a th:href="@{/scenic/detail/{id}(id=${s.id})}" class="text-decoration-none fw-bold text-dark small" th:text="${s.name}"></a>
+                        <div class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-geo-alt"></i> <span th:text="${s.city}"></span> <span class="rating-stars ms-1"><i class="bi bi-star-fill" style="font-size: 0.7rem;"></i></span> <span th:text="${s.rating}"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<div th:replace="fragments/header :: scripts"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+$(document).ready(function() {
+    var favoriteBtn = $('#favoriteBtn');
+    if (favoriteBtn.length) {
+        favoriteBtn.on('click', function() {
+            var btn = $(this);
+            $.post('/scenic/favorite/toggle', { scenicId: btn.data('id') }, function(data) {
+                var res = typeof data === 'string' ? JSON.parse(data) : data;
+                if (res.code === 200) {
+                    if (res.favorited) {
+                        btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                        btn.html('<i class="bi bi-heart-fill"></i> 已收藏');
+                    } else {
+                        btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                        btn.html('<i class="bi bi-heart"></i> 收藏景点');
+                    }
+                } else if (res.code === 401) {
+                    window.location.href = '/user/login';
+                } else if (res.msg) {
+                    alert(res.msg);
+                }
+            });
+        });
+    }
+
+    $('#commentForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        $.post('/scenic/comment', form.serialize(), function(data) {
+            var res = typeof data === 'string' ? JSON.parse(data) : data;
+            if (res.code === 200) {
+                location.reload();
+            } else if (res.code === 401) {
+                window.location.href = '/user/login';
+            } else {
+                alert(res.msg || '评论提交失败');
+            }
+        });
+    });
+});
+</script>
+
+<script>
+(function() {
+    if (typeof L === 'undefined') {
+        return;
+    }
+    var mapEl = document.getElementById('routeMap');
+    if (!mapEl) {
+        return;
+    }
+
+    var scenicId = mapEl.dataset.scenicId;
+    var scenicName = mapEl.dataset.scenicName || '景点';
+    var scenicAddress = mapEl.dataset.scenicAddress || '';
+    var scenicLat = parseFloat(mapEl.dataset.lat);
+    var scenicLon = parseFloat(mapEl.dataset.lon);
+    var hasScenicCoord = Number.isFinite(scenicLat) && Number.isFinite(scenicLon);
+
+    var map = L.map('routeMap', { zoomControl: true });
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        minZoom: 3,
+        subdomains: ['1','2','3','4'],
+        attribution: '&copy; 高德地图'
+    }).addTo(map);
+
+    map.setView(hasScenicCoord ? [scenicLat, scenicLon] : [39.9042, 116.4074], hasScenicCoord ? 13 : 5);
+    setTimeout(function() { map.invalidateSize(); }, 120);
+
+    var routeHintEl = document.getElementById('routeHint');
+    var routeModesEl = document.getElementById('routeModes');
+    var recommendationEl = document.getElementById('routeRecommendation');
+    var originInputEl = document.getElementById('routeOriginInput');
+    var planBtnEl = document.getElementById('planRouteBtn');
+
+    var scenicMarker = null;
+    var originMarker = null;
+    var routeLine = null;
+    var modeRoutes = {};
+    var lastOrigin = null;
+    var lastDestination = null;
+
+    if (hasScenicCoord) {
+        scenicMarker = L.marker([scenicLat, scenicLon]).addTo(map).bindPopup('<b>' + escapeHtml(scenicName) + '</b><br>' + escapeHtml(scenicAddress));
+    } else {
+        setHint('景点坐标解析中，点击“规划路线”自动尝试解析。', false);
+    }
+
+    if (planBtnEl) {
+        planBtnEl.addEventListener('click', function() {
+            var originValue = originInputEl ? originInputEl.value.trim() : '';
+            if (originValue) {
+                requestRoute({ scenicId: scenicId, origin: originValue });
+                return;
+            }
+            useBrowserLocation();
+        });
+    }
+
+    function requestRoute(params) {
+        setHint('路线规划中，请稍候...', false);
+        $.get('/scenic/route/plan', params, function(data) {
+            var res = typeof data === 'string' ? JSON.parse(data) : data;
+            if (!res || res.code !== 200) {
+                setHint((res && res.msg) ? res.msg : '路线规划失败', true);
+                setRecommendation('');
+                clearRouteModes();
+                clearRouteLine();
+                return;
+            }
+
+            var routes = Array.isArray(res.routes) ? res.routes : [];
+            modeRoutes = {};
+            routes.forEach(function(route) {
+                if (route && route.mode) {
+                    modeRoutes[route.mode] = route;
+                }
+            });
+
+            var modeKeys = Object.keys(modeRoutes);
+            if (!modeKeys.length) {
+                setHint('暂无可用路线，请更换出发地后重试。', true);
+                setRecommendation('');
+                clearRouteModes();
+                clearRouteLine();
+                return;
+            }
+
+            lastOrigin = res.origin || null;
+            lastDestination = res.destination || null;
+            setRecommendation('推荐方式：' + (res.recommendedModeName || '未知') + '。' + (res.recommendationReason || ''));
+            renderRouteModes(res.recommendedMode);
+
+            var preferredMode = (res.recommendedMode && modeRoutes[res.recommendedMode]) ? res.recommendedMode : modeKeys[0];
+            switchRoute(preferredMode);
+            setHint('路线规划完成，可切换出行方式。', false);
+        }).fail(function() {
+            setHint('路线请求失败，请稍后重试。', true);
+        });
+    }
+
+    function useBrowserLocation() {
+        if (!navigator.geolocation) {
+            setHint('浏览器不支持定位，请手动输入出发地。', true);
+            return;
+        }
+        setHint('正在获取当前位置...', false);
+        navigator.geolocation.getCurrentPosition(function(position) {
+            requestRoute({ scenicId: scenicId, originLat: position.coords.latitude, originLon: position.coords.longitude });
+        }, function() {
+            setHint('定位失败，请手动输入出发地。', true);
+        }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 });
+    }
+
+    function renderRouteModes(activeMode) {
+        clearRouteModes();
+        Object.keys(modeRoutes).forEach(function(mode) {
+            var route = modeRoutes[mode];
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm btn-outline-primary route-mode-btn' + (mode === activeMode ? ' active' : '');
+            button.setAttribute('data-mode', mode);
+            button.textContent = route.modeName + ' · ' + route.durationText + ' · ' + route.distanceText;
+            button.addEventListener('click', function() { switchRoute(mode); });
+            routeModesEl.appendChild(button);
+        });
+    }
+
+    function switchRoute(mode) {
+        var route = modeRoutes[mode];
+        if (!route) {
+            return;
+        }
+
+        clearRouteLine();
+        updateMarkers(lastOrigin, lastDestination);
+
+        var points = Array.isArray(route.polyline) ? route.polyline : [];
+        if (points.length >= 2) {
+            routeLine = L.polyline(points, { color: routeColor(mode), weight: 5, opacity: 0.9 }).addTo(map);
+            routeLine.bindPopup(route.modeName + ' · ' + route.durationText + ' · ' + route.distanceText);
+            map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+        } else {
+            fitByMarkers();
+        }
+
+        var buttons = routeModesEl.querySelectorAll('.route-mode-btn');
+        buttons.forEach(function(btn) {
+            if (btn.getAttribute('data-mode') === mode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    function updateMarkers(origin, destination) {
+        if (originMarker) {
+            map.removeLayer(originMarker);
+            originMarker = null;
+        }
+        if (origin && Number.isFinite(origin.lat) && Number.isFinite(origin.lon)) {
+            originMarker = L.marker([origin.lat, origin.lon]).addTo(map).bindPopup('出发地');
+        }
+
+        if (scenicMarker) {
+            map.removeLayer(scenicMarker);
+            scenicMarker = null;
+        }
+        if (destination && Number.isFinite(destination.lat) && Number.isFinite(destination.lon)) {
+            scenicMarker = L.marker([destination.lat, destination.lon]).addTo(map).bindPopup('<b>' + escapeHtml(destination.name || scenicName) + '</b><br>' + escapeHtml(destination.address || scenicAddress));
+        }
+    }
+
+    function fitByMarkers() {
+        var points = [];
+        if (originMarker) { points.push(originMarker.getLatLng()); }
+        if (scenicMarker) { points.push(scenicMarker.getLatLng()); }
+        if (points.length >= 2) {
+            map.fitBounds(L.latLngBounds(points), { padding: [30, 30] });
+        } else if (points.length === 1) {
+            map.setView(points[0], 13);
+        }
+    }
+
+    function clearRouteLine() {
+        if (routeLine) {
+            map.removeLayer(routeLine);
+            routeLine = null;
+        }
+    }
+
+    function clearRouteModes() {
+        if (routeModesEl) {
+            routeModesEl.innerHTML = '';
+        }
+    }
+
+    function setHint(text, isError) {
+        if (!routeHintEl) { return; }
+        routeHintEl.textContent = text || '';
+        routeHintEl.style.color = isError ? '#dc2626' : '#64748b';
+    }
+
+    function setRecommendation(text) {
+        if (!recommendationEl) { return; }
+        if (text) {
+            recommendationEl.classList.remove('d-none');
+            recommendationEl.textContent = text;
+        } else {
+            recommendationEl.classList.add('d-none');
+            recommendationEl.textContent = '';
+        }
+    }
+
+    function routeColor(mode) {
+        if (mode === 'walking') { return '#10b981'; }
+        if (mode === 'riding') { return '#0ea5e9'; }
+        return '#2563eb';
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+})();
+</script>
+</body>
+</html>

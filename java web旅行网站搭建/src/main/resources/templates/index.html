@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('畅游中国 - 旅行推荐网站')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<!-- Hero Banner with Carousel -->
+<div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1920&q=80');">
+                <div class="hero-overlay">
+                    <div class="container text-center text-white">
+                        <h1 class="display-3 fw-bold animate__animated animate__fadeInDown">探索中国之美</h1>
+                        <p class="lead fs-4 animate__animated animate__fadeInUp animate__delay-1s">发现全国最美的风景，开启您的梦想之旅</p>
+                        <a href="/scenic/list" th:if="${session.user != null}" class="btn btn-lg btn-warning mt-3 animate__animated animate__fadeInUp animate__delay-1s" style="border-radius:30px;padding:12px 40px;font-weight:700;">
+                            <i class="bi bi-compass me-2"></i>开始探索
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=1920&q=80');">
+                <div class="hero-overlay">
+                    <div class="container text-center text-white">
+                        <h1 class="display-3 fw-bold">万里长城</h1>
+                        <p class="lead fs-4">不到长城非好汉，感受千年文明的壮美</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1513415277900-a62401e19be4?w=1920&q=80');">
+                <div class="hero-overlay">
+                    <div class="container text-center text-white">
+                        <h1 class="display-3 fw-bold">山水如画</h1>
+                        <p class="lead fs-4">桂林山水甲天下，置身天然水墨画卷</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <div class="hero-slide" style="background-image: url('/images/scenic/4.jpg');">
+                <div class="hero-overlay">
+                    <div class="container text-center text-white">
+                        <h1 class="display-3 fw-bold">诗和远方</h1>
+                        <p class="lead fs-4">用脚步丈量世界，让心灵自由飞翔</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- 快速搜索 -->
+<div class="container" style="margin-top:-50px;position:relative;z-index:10;" th:if="${session.user != null}">
+    <div class="search-box">
+        <form action="/scenic/search" method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-bold"><i class="bi bi-search me-1"></i>搜索景点</label>
+                <input type="text" name="keyword" class="form-control" placeholder="输入景点名称或关键词...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold"><i class="bi bi-geo-alt me-1"></i>城市</label>
+                <input type="text" name="city" class="form-control" placeholder="如：北京、杭州">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold"><i class="bi bi-tag me-1"></i>类型</label>
+                <select name="scenicType" class="form-select">
+                    <option value="">全部</option>
+                    <option value="自然">自然景观</option>
+                    <option value="人文">人文景观</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary-custom w-100">
+                    <i class="bi bi-search me-1"></i>搜索
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 热门景点Top10 -->
+<section class="container py-5" th:if="${session.user != null}">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0"><i class="bi bi-fire text-danger me-2"></i>热门景点TOP10</h2>
+        <a href="/scenic/hot" class="btn btn-outline-primary" style="border-radius:20px;">查看更多 <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6" th:each="scenic,iter : ${hotScenics}" th:if="${iter.index < 6}">
+            <div class="scenic-card card">
+                <div class="card-img-wrapper">
+                    <img th:src="${scenic.coverImage != null ? scenic.coverImage : '/images/scenic/1.jpg'}" 
+                         class="card-img-top" th:alt="${scenic.name}"
+                         onerror="this.src='/images/scenic/1.jpg'">
+                    <span class="card-badge" th:if="${scenic.scenicLevel != null}">
+                        <i class="bi bi-award me-1"></i><span th:text="${scenic.scenicLevel}"></span>
+                    </span>
+                    <span class="card-price" th:text="${scenic.ticketPrice != null && scenic.ticketPrice > 0} ? '¥' + ${scenic.ticketPrice} : '免费'"></span>
+                    <span class="position-absolute top-0 start-0 m-2 badge rounded-pill" 
+                          th:classappend="${iter.index < 3} ? 'bg-danger' : 'bg-secondary'"
+                          style="font-size:0.85rem;">
+                        <i class="bi bi-trophy me-1"></i>TOP<span th:text="${iter.index + 1}"></span>
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="text-decoration-none text-dark" th:text="${scenic.name}"></a>
+                    </h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="rating-stars me-2">
+                            <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, scenic.rating != null ? scenic.rating.intValue() : 5)}"></i>
+                        </span>
+                        <small class="text-muted" th:text="${scenic.rating}"></small>
+                        <small class="text-muted ms-auto"><i class="bi bi-eye me-1"></i><span th:text="${scenic.viewCount}"></span></small>
+                    </div>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                        <span th:text="${scenic.province + ' · ' + scenic.city}"></span>
+                    </p>
+                    <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-primary mt-2" style="border-radius:20px;">
+                        查看详情 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 个性化推荐 -->
+<section style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); padding: 3rem 0;" th:if="${session.user != null}">
+    <div class="container">
+        <h2 class="section-title text-center"><i class="bi bi-magic me-2" style="color:#8b5cf6;"></i>为您推荐</h2>
+        <p class="text-center text-muted mb-4">根据您的浏览偏好，为您精心推荐以下景点</p>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6" th:each="scenic : ${recommendations}">
+                <div class="scenic-card card">
+                    <div class="card-img-wrapper">
+                        <img th:src="${scenic.coverImage != null ? scenic.coverImage : '/images/scenic/1.jpg'}" 
+                             class="card-img-top" th:alt="${scenic.name}"
+                             onerror="this.src='/images/scenic/1.jpg'">
+                        <span class="card-badge" th:if="${scenic.scenicType != null}" th:text="${scenic.scenicType}"></span>
+                        <span class="card-price" th:text="${scenic.ticketPrice != null && scenic.ticketPrice > 0} ? '¥' + ${scenic.ticketPrice} : '免费'"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="text-decoration-none text-dark" th:text="${scenic.name}"></a>
+                        </h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="rating-stars me-2">
+                                <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, scenic.rating != null ? scenic.rating.intValue() : 5)}"></i>
+                            </span>
+                            <small class="text-muted" th:text="${scenic.rating}"></small>
+                        </div>
+                        <p class="card-text">
+                            <i class="bi bi-geo-alt text-primary me-1"></i>
+                            <span th:text="${scenic.province + ' · ' + scenic.city}"></span>
+                        </p>
+                        <a th:href="@{/scenic/detail/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-success mt-2" style="border-radius:20px;">
+                            了解更多 <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 数据统计 -->
+<section class="container py-5" th:if="${session.user != null}">
+    <div class="row text-center g-4">
+        <div class="col-md-3">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+                <i class="bi bi-geo-alt-fill text-primary" style="font-size:2.5rem;"></i>
+                <h3 class="fw-bold mt-2" th:text="${hotScenics != null ? hotScenics.size() : 0}">0</h3>
+                <p class="text-muted mb-0">精选景点</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+                <i class="bi bi-building text-success" style="font-size:2.5rem;"></i>
+                <h3 class="fw-bold mt-2">50+</h3>
+                <p class="text-muted mb-0">覆盖城市</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+                <i class="bi bi-people-fill text-warning" style="font-size:2.5rem;"></i>
+                <h3 class="fw-bold mt-2">1000+</h3>
+                <p class="text-muted mb-0">注册用户</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-white rounded-4 shadow-sm">
+                <i class="bi bi-chat-heart-fill text-danger" style="font-size:2.5rem;"></i>
+                <h3 class="fw-bold mt-2">5000+</h3>
+                <p class="text-muted mb-0">用户评价</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<div th:replace="fragments/header :: scripts"></div>
+
+<style>
+    .hero-slide {
+        height: 550px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .hero-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+</body>
+</html>
+

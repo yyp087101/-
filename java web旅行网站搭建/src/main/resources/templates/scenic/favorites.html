@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('我的收藏 - 畅游中国')"></head>
+<body>
+<nav th:replace="fragments/header :: navbar"></nav>
+
+<div style="background:linear-gradient(135deg,#dc2626 0%,#e11d48 100%);padding:3rem 0;color:#fff;">
+    <div class="container">
+        <h1 class="fw-bold"><i class="bi bi-heart-fill me-2"></i>我的收藏</h1>
+        <p class="mb-0 opacity-75">您收藏的心仪景点，随时查看</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6" th:each="fav : ${favorites}">
+            <div class="scenic-card card">
+                <div class="card-img-wrapper">
+                    <img th:src="${fav.scenic != null && fav.scenic.coverImage != null ? fav.scenic.coverImage : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600'}" 
+                         class="card-img-top" th:alt="${fav.scenic != null ? fav.scenic.name : ''}"
+                         onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600'">
+                    <span class="card-badge" th:if="${fav.scenic != null && fav.scenic.scenicLevel != null}" th:text="${fav.scenic.scenicLevel}"></span>
+                    <span class="card-price" th:if="${fav.scenic != null}" 
+                          th:text="${fav.scenic.ticketPrice != null && fav.scenic.ticketPrice > 0} ? '¥' + ${fav.scenic.ticketPrice} : '免费'"></span>
+                </div>
+                <div class="card-body" th:if="${fav.scenic != null}">
+                    <h5 class="card-title">
+                        <a th:href="@{/scenic/detail/{id}(id=${fav.scenicId})}" class="text-decoration-none text-dark" th:text="${fav.scenic.name}"></a>
+                    </h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="rating-stars me-2">
+                            <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, fav.scenic.rating != null ? fav.scenic.rating.intValue() : 5)}"></i>
+                        </span>
+                        <small class="text-muted" th:text="${fav.scenic.rating}"></small>
+                    </div>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                        <span th:text="${fav.scenic.province + ' · ' + fav.scenic.city}"></span>
+                    </p>
+                    <p class="card-text small text-muted">
+                        <i class="bi bi-clock me-1"></i>收藏于 <span th:text="${#dates.format(fav.createTime, 'yyyy-MM-dd HH:mm')}"></span>
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/scenic/detail/{id}(id=${fav.scenicId})}" class="btn btn-sm btn-outline-primary" style="border-radius:20px;">
+                            查看详情 <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger unfavorite-btn" th:data-id="${fav.scenicId}" style="border-radius:20px;">
+                            <i class="bi bi-heart-fill me-1"></i>取消收藏
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${favorites == null || favorites.isEmpty()}" class="text-center py-5">
+        <i class="bi bi-heart" style="font-size:4rem;color:#cbd5e1;"></i>
+        <h4 class="text-muted mt-3">暂无收藏</h4>
+        <p class="text-muted">去发现更多精彩景点并收藏吧！</p>
+        <a href="/scenic/list" class="btn btn-primary-custom"><i class="bi bi-compass me-1"></i>浏览景点</a>
+    </div>
+</div>
+
+<footer th:replace="fragments/header :: footer"></footer>
+<div th:replace="fragments/header :: scripts"></div>
+
+<script>
+    $(document).ready(function() {
+        $('.unfavorite-btn').click(function() {
+            var btn = $(this);
+            var scenicId = btn.data('id');
+            if (confirm('确定取消收藏该景点吗？')) {
+                $.post('/scenic/favorite/toggle', {scenicId: scenicId}, function(data) {
+                    var res = typeof data === 'string' ? JSON.parse(data) : data;
+                    if (res.code === 200) {
+                        btn.closest('.col-lg-4').fadeOut(300, function() { $(this).remove(); });
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

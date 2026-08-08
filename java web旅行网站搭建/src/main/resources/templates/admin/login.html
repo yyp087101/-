@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('管理员登录 - 畅游中国')"></head>
+<body style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
+                             style="width:80px;height:80px;background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+                            <i class="bi bi-shield-lock-fill text-white" style="font-size:2.5rem;"></i>
+                        </div>
+                        <h3 class="fw-bold">管理后台</h3>
+                        <p class="text-muted">请输入管理员账号和密码登录</p>
+                    </div>
+                    
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" style="border-radius:12px;">
+                        <i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    
+                    <form action="/admin/login" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="bi bi-person-gear me-1"></i>管理员账号</label>
+                            <input type="text" name="username" class="form-control" placeholder="请输入管理员账号" required
+                                   style="border-radius:12px;padding:12px 16px;border:2px solid #e2e8f0;">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-key me-1"></i>密码</label>
+                            <input type="password" name="password" class="form-control" placeholder="请输入密码" required
+                                   style="border-radius:12px;padding:12px 16px;border:2px solid #e2e8f0;">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" 
+                                style="background:linear-gradient(135deg,#1e293b,#334155);border:none;border-radius:12px;padding:12px;font-weight:700;font-size:1.05rem;">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>登录管理后台
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/" class="text-muted text-decoration-none small">
+                            <i class="bi bi-arrow-left me-1"></i>返回首页
+                        </a>
+                        <span class="text-muted mx-2">|</span>
+                        <a href="/user/login" class="text-muted text-decoration-none small">
+                            <i class="bi bi-person me-1"></i>用户登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>

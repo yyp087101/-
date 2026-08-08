@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.travel.mapper.FavoriteMapper">
+    
+    <resultMap id="BaseResultMap" type="com.travel.entity.Favorite">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="scenic_id" property="scenicId"/>
+        <result column="create_time" property="createTime"/>
+        <association property="scenic" javaType="com.travel.entity.Scenic">
+            <id column="s_id" property="id"/>
+            <result column="s_name" property="name"/>
+            <result column="s_city" property="city"/>
+            <result column="s_province" property="province"/>
+            <result column="s_cover_image" property="coverImage"/>
+            <result column="s_ticket_price" property="ticketPrice"/>
+            <result column="s_rating" property="rating"/>
+            <result column="s_scenic_level" property="scenicLevel"/>
+            <result column="s_scenic_type" property="scenicType"/>
+        </association>
+    </resultMap>
+    
+    <insert id="insert">
+        INSERT INTO favorite (user_id, scenic_id) VALUES (#{userId}, #{scenicId})
+    </insert>
+    
+    <delete id="delete">
+        DELETE FROM favorite WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </delete>
+    
+    <select id="findByUserAndScenic" resultType="com.travel.entity.Favorite">
+        SELECT * FROM favorite WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </select>
+    
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT f.*, s.id as s_id, s.name as s_name, s.city as s_city, s.province as s_province,
+               s.cover_image as s_cover_image, s.ticket_price as s_ticket_price, s.rating as s_rating,
+               s.scenic_level as s_scenic_level, s.scenic_type as s_scenic_type
+        FROM favorite f LEFT JOIN scenic s ON f.scenic_id = s.id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC
+    </select>
+    
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*) FROM favorite WHERE user_id = #{userId}
+    </select>
+    
+    <select id="findScenicIdsByUserId" resultType="int">
+        SELECT scenic_id FROM favorite WHERE user_id = #{userId}
+    </select>
+
+    <select id="findRecentScenicIdsByUserId" resultType="int">
+        SELECT scenic_id
+        FROM favorite
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

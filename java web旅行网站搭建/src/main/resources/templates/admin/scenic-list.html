@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head('景点管理 - 畅游中国后台')"></head>
+<body>
+<style th:replace="fragments/admin-layout :: admin-style"></style>
+
+<div class="admin-layout">
+    <div th:replace="fragments/admin-layout :: sidebar"></div>
+    
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2><i class="bi bi-map me-2"></i>景点管理</h2>
+            <div class="d-flex gap-2">
+                <a href="/admin/scenic/import" class="btn btn-outline-success" style="border-radius:10px;">
+                    <i class="bi bi-upload me-1"></i>景点导入
+                </a>
+                <a href="/admin/scenic/add" class="btn btn-primary-custom">
+                    <i class="bi bi-plus-circle me-1"></i>新增景点
+                </a>
+            </div>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" style="border-radius:12px;">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" style="border-radius:12px;">
+            <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${warning}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="admin-table">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>景点名称</th>
+                            <th>城市</th>
+                            <th>等级</th>
+                            <th>类型</th>
+                            <th>门票</th>
+                            <th>评分</th>
+                            <th>浏览量</th>
+                            <th>来源</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="scenic : ${scenics}">
+                            <td th:text="${scenic.id}"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="${scenic.coverImage != null ? scenic.coverImage : '/images/scenic/1.jpg'}" 
+                                         style="width:50px;height:35px;object-fit:cover;border-radius:6px;" class="me-2"
+                                         onerror="this.src='/images/scenic/1.jpg'">
+                                    <strong th:text="${scenic.name}"></strong>
+                                </div>
+                            </td>
+                            <td th:text="${scenic.city}"></td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:if="${scenic.scenicLevel != null}" th:text="${scenic.scenicLevel}"></span>
+                            </td>
+                            <td th:text="${scenic.scenicType}"></td>
+                            <td th:text="${scenic.ticketPrice != null && scenic.ticketPrice > 0 ? '¥' + scenic.ticketPrice : '免费'}"></td>
+                            <td>
+                                <span class="text-warning"><i class="bi bi-star-fill"></i></span>
+                                <span th:text="${scenic.rating}"></span>
+                            </td>
+                            <td th:text="${scenic.viewCount}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${scenic.isApi == 1 ? 'bg-info' : 'bg-secondary'}" 
+                                      th:text="${scenic.isApi == 1 ? 'API' : '手动'}"></span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/scenic/edit/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-primary me-1" style="border-radius:8px;">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/admin/scenic/delete/{id}(id=${scenic.id})}" class="btn btn-sm btn-outline-danger" style="border-radius:8px;"
+                                   onclick="return confirm('确认删除该景点吗？此操作不可恢复。');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div th:if="${scenics == null || scenics.isEmpty()}" class="text-center py-4">
+                <i class="bi bi-inbox" style="font-size:3rem;color:#cbd5e1;"></i>
+                <p class="text-muted mt-2">暂无景点数据</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/header :: scripts"></div>
+</body>
+</html>
