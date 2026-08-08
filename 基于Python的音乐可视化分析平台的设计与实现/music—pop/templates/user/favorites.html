@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}我的收藏 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-music text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">音乐平台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('user_home') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-home w-5"></i>首页
+        </a>
+        <a href="{{ url_for('search') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-search w-5"></i>搜索
+        </a>
+        <a href="{{ url_for('favorites') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-heart w-5"></i>我的收藏
+        </a>
+        <a href="{{ url_for('visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+        <a href="{{ url_for('vip_page') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5 text-yellow-400"></i>VIP会员
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6"><i class="fas fa-heart text-red-400 mr-2"></i>我的收藏</h1>
+    
+    {% if favorites %}
+        <div class="space-y-2">
+            {% for fav in favorites %}
+            <div class="glass-card p-4 flex items-center gap-4">
+                <img src="{{ fav.cover_url or 'https://via.placeholder.com/60' }}" class="w-14 h-14 rounded-lg object-cover">
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium truncate">{{ fav.song_name }}</div>
+                    <div class="text-gray-400 text-sm truncate">{{ fav.artist }}</div>
+                </div>
+                <a href="{{ url_for('play_song', song_id=fav.song_id) }}" class="btn-primary text-sm">
+                    <i class="fas fa-play mr-1"></i>播放
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center text-gray-400 py-12">
+            <i class="fas fa-heart text-5xl mb-4"></i>
+            <p>还没有收藏任何歌曲</p>
+            <a href="{{ url_for('search') }}" class="text-cyan-400 hover:underline mt-2 inline-block">去搜索喜欢的音乐</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

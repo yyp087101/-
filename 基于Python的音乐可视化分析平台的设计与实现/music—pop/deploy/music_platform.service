@@ -1,0 +1,20 @@
+[Unit]
+Description=Music Platform - Flask Application
+After=network.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/var/www/music_platform
+Environment="PATH=/var/www/music_platform/venv/bin"
+ExecStart=/var/www/music_platform/venv/bin/gunicorn -c gunicorn_config.py app:app
+Restart=always
+RestartSec=5
+
+# 日志
+StandardOutput=append:/var/www/music_platform/logs/stdout.log
+StandardError=append:/var/www/music_platform/logs/stderr.log
+
+[Install]
+WantedBy=multi-user.target

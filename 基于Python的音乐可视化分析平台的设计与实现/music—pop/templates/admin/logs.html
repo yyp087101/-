@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}日志管理 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-shield-alt text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">管理后台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-tachometer-alt w-5"></i>控制台
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-users w-5"></i>用户管理
+        </a>
+        <a href="{{ url_for('admin_vip') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5"></i>VIP管理
+        </a>
+        <a href="{{ url_for('admin_logs') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-history w-5"></i>日志管理
+        </a>
+        <a href="{{ url_for('admin_stats') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-pie w-5"></i>数据统计
+        </a>
+        <a href="{{ url_for('admin_visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6"><i class="fas fa-history text-pink-400 mr-2"></i>用户日志</h1>
+    
+    <div class="glass-card overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-white/5">
+                <tr>
+                    <th class="text-left p-4">时间</th>
+                    <th class="text-left p-4">用户</th>
+                    <th class="text-left p-4">操作</th>
+                    <th class="text-left p-4">详情</th>
+                    <th class="text-left p-4">IP地址</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs.items %}
+                <tr class="border-t border-white/5 hover:bg-white/5">
+                    <td class="p-4 text-gray-400">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td class="p-4">{{ log.user.username }}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-sm
+                            {% if log.action == '登录' %}bg-green-400/20 text-green-400
+                            {% elif log.action == '退出' %}bg-gray-400/20 text-gray-400
+                            {% elif log.action == '播放' %}bg-cyan-400/20 text-cyan-400
+                            {% elif log.action == '搜索' %}bg-blue-400/20 text-blue-400
+                            {% elif log.action == '收藏' %}bg-red-400/20 text-red-400
+                            {% elif log.action == '购买VIP' %}bg-yellow-400/20 text-yellow-400
+                            {% else %}bg-white/10 text-white{% endif %}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-gray-400 max-w-xs truncate">{{ log.detail or '-' }}</td>
+                    <td class="p-4 text-gray-500">{{ log.ip_address or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if logs.pages > 1 %}
+    <div class="flex justify-center gap-2 mt-6">
+        {% if logs.has_prev %}
+        <a href="{{ url_for('admin_logs', page=logs.prev_num) }}" class="btn-secondary">上一页</a>
+        {% endif %}
+        <span class="px-4 py-2 text-gray-400">{{ logs.page }} / {{ logs.pages }}</span>
+        {% if logs.has_next %}
+        <a href="{{ url_for('admin_logs', page=logs.next_num) }}" class="btn-secondary">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% block title %}数据统计 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-shield-alt text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">管理后台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-tachometer-alt w-5"></i>控制台
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-users w-5"></i>用户管理
+        </a>
+        <a href="{{ url_for('admin_vip') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5"></i>VIP管理
+        </a>
+        <a href="{{ url_for('admin_logs') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-history w-5"></i>日志管理
+        </a>
+        <a href="{{ url_for('admin_stats') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-chart-pie w-5"></i>数据统计
+        </a>
+        <a href="{{ url_for('admin_visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-4"><i class="fas fa-chart-pie text-green-400 mr-2"></i>数据统计中心</h1>
+    
+    <!-- 核心指标卡片 - 更紧凑 -->
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-cyan-400">{{ total_users }}</div>
+            <div class="text-gray-400 text-xs">总用户</div>
+        </div>
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-yellow-400">{{ total_vip }}</div>
+            <div class="text-gray-400 text-xs">VIP用户</div>
+        </div>
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-green-400">{{ total_plays }}</div>
+            <div class="text-gray-400 text-xs">总播放</div>
+        </div>
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-red-400">{{ total_favorites }}</div>
+            <div class="text-gray-400 text-xs">总收藏</div>
+        </div>
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-purple-400">{{ vip_rate }}%</div>
+            <div class="text-gray-400 text-xs">VIP转化</div>
+        </div>
+        <div class="glass-card p-3 text-center">
+            <div class="text-2xl font-bold text-orange-400">¥{{ "%.0f"|format(total_revenue) }}</div>
+            <div class="text-gray-400 text-xs">总收入</div>
+        </div>
+    </div>
+    
+    <!-- 标签页导航 -->
+    <div class="flex gap-2 mb-4 border-b border-white/10 pb-2">
+        <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-4 py-2 rounded-t-lg text-sm font-medium transition-all">
+            <i class="fas fa-tachometer-alt mr-1"></i>概览
+        </button>
+        <button onclick="switchTab('charts')" id="tab-charts" class="tab-btn px-4 py-2 rounded-t-lg text-sm font-medium transition-all">
+            <i class="fas fa-chart-line mr-1"></i>图表
+        </button>
+        <button onclick="switchTab('rankings')" id="tab-rankings" class="tab-btn px-4 py-2 rounded-t-lg text-sm font-medium transition-all">
+            <i class="fas fa-trophy mr-1"></i>排行榜
+        </button>
+    </div>
+    
+    <!-- 概览标签页 -->
+    <div id="panel-overview" class="tab-panel">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div class="glass-card p-3 border-l-4 border-cyan-400">
+                <div class="text-xl font-bold">{{ today_plays }}</div>
+                <div class="text-gray-400 text-xs">今日播放</div>
+            </div>
+            <div class="glass-card p-3 border-l-4 border-green-400">
+                <div class="text-xl font-bold">{{ today_users }}</div>
+                <div class="text-gray-400 text-xs">今日注册</div>
+            </div>
+            <div class="glass-card p-3 border-l-4 border-purple-400">
+                <div class="text-xl font-bold">{{ today_active }}</div>
+                <div class="text-gray-400 text-xs">今日活跃</div>
+            </div>
+            <div class="glass-card p-3 border-l-4 border-yellow-400">
+                <div class="text-xl font-bold">{{ week_plays }}</div>
+                <div class="text-gray-400 text-xs">本周播放</div>
+            </div>
+            <div class="glass-card p-3 border-l-4 border-red-400">
+                <div class="text-xl font-bold">{{ week_users }}</div>
+                <div class="text-gray-400 text-xs">本周注册</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="glass-card p-3 text-center">
+                <div class="text-xl font-bold text-green-400">¥{{ "%.2f"|format(total_revenue) }}</div>
+                <div class="text-gray-400 text-xs">累计收入</div>
+            </div>
+            <div class="glass-card p-3 text-center">
+                <div class="text-xl font-bold text-cyan-400">¥{{ "%.2f"|format(month_revenue) }}</div>
+                <div class="text-gray-400 text-xs">本月收入</div>
+            </div>
+            <div class="glass-card p-3 text-center">
+                <div class="text-xl font-bold text-yellow-400">{{ total_vip }}</div>
+                <div class="text-gray-400 text-xs">当前VIP</div>
+            </div>
+            <div class="glass-card p-3 text-center">
+                <div class="text-xl font-bold text-purple-400">¥{{ "%.2f"|format(total_revenue / total_vip if total_vip > 0 else 0) }}</div>
+                <div class="text-gray-400 text-xs">人均消费</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 图表标签页 -->
+    <div id="panel-charts" class="tab-panel hidden">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="glass-card p-3">
+                <h3 class="text-xs font-bold mb-1"><i class="fas fa-chart-line text-cyan-400 mr-1"></i>播放趋势</h3>
+                <div style="height: 120px;"><canvas id="dailyPlaysChart"></canvas></div>
+            </div>
+            <div class="glass-card p-3">
+                <h3 class="text-xs font-bold mb-1"><i class="fas fa-user-plus text-green-400 mr-1"></i>注册趋势</h3>
+                <div style="height: 120px;"><canvas id="dailyUsersChart"></canvas></div>
+            </div>
+            <div class="glass-card p-3">
+                <h3 class="text-xs font-bold mb-1"><i class="fas fa-music text-purple-400 mr-1"></i>类型分布</h3>
+                <div style="height: 120px;"><canvas id="genreChart"></canvas></div>
+            </div>
+            <div class="glass-card p-3">
+                <h3 class="text-xs font-bold mb-1"><i class="fas fa-clock text-yellow-400 mr-1"></i>时段分布</h3>
+                <div style="height: 120px;"><canvas id="hourlyChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 排行榜标签页 -->
+    <div id="panel-rankings" class="tab-panel hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="glass-card p-4">
+                <h3 class="text-sm font-bold mb-3"><i class="fas fa-fire text-red-400 mr-1"></i>热门歌曲</h3>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    {% for song in top_songs %}
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                            {% if loop.index <= 3 %}bg-gradient-to-r from-yellow-400 to-orange-400 text-black{% else %}bg-white/10{% endif %}">
+                            {{ loop.index }}
+                        </span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm truncate">{{ song.song_name }}</div>
+                            <div class="text-gray-500 text-xs truncate">{{ song.artist }}</div>
+                        </div>
+                        <span class="text-cyan-400 text-sm">{{ song.play_count }}</span>
+                    </div>
+                    {% endfor %}
+                    {% if not top_songs %}<div class="text-gray-400 text-center py-2 text-sm">暂无数据</div>{% endif %}
+                </div>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="text-sm font-bold mb-3"><i class="fas fa-microphone text-purple-400 mr-1"></i>热门歌手</h3>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    {% for artist in top_artists %}
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                            {% if loop.index <= 3 %}bg-gradient-to-r from-purple-400 to-pink-400{% else %}bg-white/10{% endif %}">
+                            {{ loop.index }}
+                        </span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm truncate">{{ artist.name }}</div>
+                            <div class="text-gray-500 text-xs">{{ artist.songs }}首</div>
+                        </div>
+                        <span class="text-purple-400 text-sm">{{ artist.plays }}</span>
+                    </div>
+                    {% endfor %}
+                    {% if not top_artists %}<div class="text-gray-400 text-center py-2 text-sm">暂无数据</div>{% endif %}
+                </div>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="text-sm font-bold mb-3"><i class="fas fa-trophy text-yellow-400 mr-1"></i>活跃用户</h3>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    {% for user in active_users %}
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                            {% if loop.index <= 3 %}bg-gradient-to-r from-yellow-400 to-amber-500 text-black{% else %}bg-white/10{% endif %}">
+                            {{ loop.index }}
+                        </span>
+                        <div class="flex-1 min-w-0 text-sm truncate">{{ user.name }}</div>
+                        <span class="text-yellow-400 text-sm">{{ user.plays }}次</span>
+                    </div>
+                    {% endfor %}
+                    {% if not active_users %}<div class="text-gray-400 text-center py-2 text-sm">暂无数据</div>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tab-btn { background: transparent; color: #888; }
+.tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.tab-btn.active { background: rgba(0, 212, 255, 0.1); color: #00d4ff; border-bottom: 2px solid #00d4ff; }
+.tab-panel.hidden { display: none; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 标签页切换
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    document.getElementById('panel-' + tabName).classList.remove('hidden');
+    
+    // 切换到图表标签时，触发图表重绘
+    if (tabName === 'charts') {
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+    }
+}
+
+const chartColors = {
+    cyan: '#00d4ff',
+    green: '#22c55e',
+    purple: '#a855f7',
+    yellow: '#ffd93d',
+    red: '#ff6b6b',
+    orange: '#f97316',
+    pink: '#ec4899'
+};
+
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#fff' } } },
+    scales: {
+        x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+    }
+};
+
+// 播放量趋势
+const dailyPlays = {{ daily_plays | tojson }};
+if (dailyPlays.length > 0) {
+    new Chart(document.getElementById('dailyPlaysChart'), {
+        type: 'line',
+        data: {
+            labels: dailyPlays.map(d => d[0]).reverse(),
+            datasets: [{
+                label: '播放量',
+                data: dailyPlays.map(d => d[1]).reverse(),
+                borderColor: chartColors.cyan,
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: chartOptions
+    });
+}
+
+// 用户注册趋势
+const dailyUsers = {{ daily_users | tojson }};
+if (dailyUsers.length > 0) {
+    new Chart(document.getElementById('dailyUsersChart'), {
+        type: 'bar',
+        data: {
+            labels: dailyUsers.map(d => d[0]).reverse(),
+            datasets: [{
+                label: '新注册用户',
+                data: dailyUsers.map(d => d[1]).reverse(),
+                backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                borderColor: chartColors.green,
+                borderWidth: 1
+            }]
+        },
+        options: chartOptions
+    });
+}
+
+// 音乐类型分布
+const genreData = {{ genre_stats | tojson }};
+if (genreData.length > 0) {
+    new Chart(document.getElementById('genreChart'), {
+        type: 'doughnut',
+        data: {
+            labels: genreData.map(d => d[0]),
+            datasets: [{
+                data: genreData.map(d => d[1]),
+                backgroundColor: [chartColors.cyan, chartColors.green, chartColors.purple, chartColors.yellow, chartColors.red, chartColors.orange, chartColors.pink]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { color: '#fff', padding: 15 } } }
+        }
+    });
+}
+
+// 播放时段分布
+const hourlyData = {{ hourly_plays | tojson }};
+if (hourlyData.length > 0) {
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const hourlyMap = Object.fromEntries(hourlyData);
+    new Chart(document.getElementById('hourlyChart'), {
+        type: 'bar',
+        data: {
+            labels: hours.map(h => h + ':00'),
+            datasets: [{
+                label: '播放次数',
+                data: hours.map(h => hourlyMap[h] || 0),
+                backgroundColor: hours.map(h => h >= 8 && h <= 22 ? 'rgba(168, 85, 247, 0.6)' : 'rgba(100, 100, 100, 0.4)'),
+                borderColor: hours.map(h => h >= 8 && h <= 22 ? chartColors.purple : '#666'),
+                borderWidth: 1
+            }]
+        },
+        options: chartOptions
+    });
+}
+</script>
+{% endblock %}

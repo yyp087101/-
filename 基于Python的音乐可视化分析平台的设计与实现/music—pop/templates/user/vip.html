@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}VIP会员 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-music text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">音乐平台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('user_home') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-home w-5"></i>首页
+        </a>
+        <a href="{{ url_for('search') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-search w-5"></i>搜索
+        </a>
+        <a href="{{ url_for('favorites') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-heart w-5"></i>我的收藏
+        </a>
+        <a href="{{ url_for('visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+        <a href="{{ url_for('vip_page') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-crown w-5 text-yellow-400"></i>VIP会员
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6"><i class="fas fa-crown text-yellow-400 mr-2"></i>VIP会员</h1>
+    
+    {% if is_vip %}
+    <div class="glass-card p-6 mb-6 border border-yellow-500/30">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center">
+                <i class="fas fa-crown text-2xl text-white"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-yellow-400">VIP会员</div>
+                <div class="text-gray-400">到期时间: {{ current_user.vip_expire_date.strftime('%Y-%m-%d') }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="mb-8">
+        <h2 class="text-lg font-bold mb-4">VIP特权</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-6 text-center">
+                <i class="fas fa-video text-4xl text-cyan-400 mb-4"></i>
+                <div class="font-bold mb-2">MV观看</div>
+                <div class="text-gray-400 text-sm">畅享高清MV</div>
+            </div>
+            <div class="glass-card p-6 text-center">
+                <i class="fas fa-music text-4xl text-pink-400 mb-4"></i>
+                <div class="font-bold mb-2">无损音质</div>
+                <div class="text-gray-400 text-sm">享受高品质音乐</div>
+            </div>
+            <div class="glass-card p-6 text-center">
+                <i class="fas fa-download text-4xl text-green-400 mb-4"></i>
+                <div class="font-bold mb-2">下载特权</div>
+                <div class="text-gray-400 text-sm">离线收听无限制</div>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="text-lg font-bold mb-4">选择套餐</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-card p-6 text-center cursor-pointer hover:border-yellow-400 border border-transparent transition" onclick="buyVip(30)">
+            <div class="text-gray-400 mb-2">月度会员</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥15</div>
+            <div class="text-gray-500 text-sm mb-4">30天</div>
+            <button class="btn-primary w-full">立即开通</button>
+        </div>
+        <div class="glass-card p-6 text-center cursor-pointer border-2 border-yellow-400 relative" onclick="buyVip(90)">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs px-3 py-1 rounded-full font-bold">推荐</div>
+            <div class="text-gray-400 mb-2">季度会员</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥40</div>
+            <div class="text-gray-500 text-sm mb-4">90天</div>
+            <button class="btn-primary w-full">立即开通</button>
+        </div>
+        <div class="glass-card p-6 text-center cursor-pointer hover:border-yellow-400 border border-transparent transition" onclick="buyVip(365)">
+            <div class="text-gray-400 mb-2">年度会员</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥128</div>
+            <div class="text-gray-500 text-sm mb-4">365天</div>
+            <button class="btn-primary w-full">立即开通</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function buyVip(days) {
+    if (confirm(`确定开通 ${days} 天VIP会员吗？`)) {
+        fetch('/api/buy_vip', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({days: days})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('开通成功！到期时间: ' + data.expire_date);
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

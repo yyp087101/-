@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}搜索 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-music text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">音乐平台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('user_home') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-home w-5"></i>首页
+        </a>
+        <a href="{{ url_for('search') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-search w-5"></i>搜索
+        </a>
+        <a href="{{ url_for('favorites') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-heart w-5"></i>我的收藏
+        </a>
+        <a href="{{ url_for('visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+        <a href="{{ url_for('vip_page') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5 text-yellow-400"></i>VIP会员
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6"><i class="fas fa-search text-cyan-400 mr-2"></i>搜索音乐</h1>
+    
+    <form action="{{ url_for('search') }}" method="GET" class="mb-8">
+        <div class="flex gap-3">
+            <input type="text" name="q" value="{{ keyword }}" class="input-field flex-1" placeholder="输入歌曲名、歌手名搜索...">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-search mr-2"></i>搜索
+            </button>
+        </div>
+    </form>
+    
+    {% if keyword %}
+        <p class="text-gray-400 mb-4">找到 {{ results.total }} 个结果</p>
+        
+        {% if results.songs %}
+            <div class="space-y-2">
+                {% for song in results.songs %}
+                <a href="{{ url_for('play_song', song_id=song.id, name=song.name, artist=song.artist, cover=song.cover, album_id=song.album_id) }}" class="glass-card p-4 flex items-center gap-4 hover:bg-white/10 transition">
+                    <img src="{{ song.cover or 'https://via.placeholder.com/60' }}" class="w-14 h-14 rounded-lg object-cover">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate">{{ song.name }}</div>
+                        <div class="text-gray-400 text-sm truncate">{{ song.artist }} - {{ song.album }}</div>
+                    </div>
+                    <div class="text-gray-400 text-sm">
+                        {{ (song.duration // 60) }}:{{ '%02d' % (song.duration % 60) }}
+                    </div>
+                    <i class="fas fa-play text-cyan-400"></i>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-search text-5xl mb-4"></i>
+                <p>没有找到相关歌曲</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center text-gray-400 py-12">
+            <i class="fas fa-music text-5xl mb-4"></i>
+            <p>输入关键词开始搜索</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

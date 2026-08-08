@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}管理后台 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-shield-alt text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">管理后台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-tachometer-alt w-5"></i>控制台
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-users w-5"></i>用户管理
+        </a>
+        <a href="{{ url_for('admin_vip') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5"></i>VIP管理
+        </a>
+        <a href="{{ url_for('admin_logs') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-history w-5"></i>日志管理
+        </a>
+        <a href="{{ url_for('admin_stats') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-pie w-5"></i>数据统计
+        </a>
+        <a href="{{ url_for('admin_visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-red-400 to-pink-400 flex items-center justify-center">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+                <div class="font-medium">{{ current_user.username }}</div>
+                <span class="text-xs text-red-400">管理员</span>
+            </div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6">管理控制台</h1>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-3xl font-bold text-cyan-400">{{ user_count }}</div>
+                    <div class="text-gray-400">注册用户</div>
+                </div>
+                <i class="fas fa-users text-3xl text-cyan-400/30"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-3xl font-bold text-yellow-400">{{ vip_count }}</div>
+                    <div class="text-gray-400">VIP用户</div>
+                </div>
+                <i class="fas fa-crown text-3xl text-yellow-400/30"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-3xl font-bold text-green-400">{{ total_plays }}</div>
+                    <div class="text-gray-400">总播放量</div>
+                </div>
+                <i class="fas fa-play text-3xl text-green-400/30"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-3xl font-bold text-pink-400">{{ today_logs }}</div>
+                    <div class="text-gray-400">今日操作</div>
+                </div>
+                <i class="fas fa-history text-3xl text-pink-400/30"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6">
+            <h2 class="text-lg font-bold mb-4"><i class="fas fa-fire text-red-400 mr-2"></i>热门歌曲 TOP 10</h2>
+            <div class="space-y-3">
+                {% for song in top_songs %}
+                <div class="flex items-center gap-3">
+                    <span class="w-6 h-6 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center justify-center text-sm font-bold">{{ loop.index }}</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate">{{ song.song_name }}</div>
+                        <div class="text-gray-400 text-sm truncate">{{ song.artist }}</div>
+                    </div>
+                    <div class="text-cyan-400 font-bold">{{ song.play_count }}</div>
+                </div>
+                {% endfor %}
+                {% if not top_songs %}
+                <div class="text-gray-400 text-center py-4">暂无数据</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="glass-card p-6">
+            <h2 class="text-lg font-bold mb-4"><i class="fas fa-history text-pink-400 mr-2"></i>最近操作</h2>
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+                {% for log in recent_logs %}
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="text-gray-500">{{ log.created_at.strftime('%m-%d %H:%M') }}</span>
+                    <span class="px-2 py-1 rounded bg-cyan-400/20 text-cyan-400">{{ log.action }}</span>
+                    <span class="text-gray-400 truncate">{{ log.detail or '' }}</span>
+                </div>
+                {% endfor %}
+                {% if not recent_logs %}
+                <div class="text-gray-400 text-center py-4">暂无日志</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

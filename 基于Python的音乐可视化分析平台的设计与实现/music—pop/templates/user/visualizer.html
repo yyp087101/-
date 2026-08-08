@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% block title %}音乐可视化分析 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-music text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">音乐平台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('user_home') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-home w-5"></i>首页
+        </a>
+        <a href="{{ url_for('search') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-search w-5"></i>搜索
+        </a>
+        <a href="{{ url_for('favorites') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-heart w-5"></i>我的收藏
+        </a>
+        <a href="{{ url_for('visualizer') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+        <a href="{{ url_for('vip_page') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5 text-yellow-400"></i>VIP会员
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div id="uploadSection">
+        <h1 class="text-2xl font-bold mb-6"><i class="fas fa-chart-bar text-cyan-400 mr-2"></i>音乐可视化分析</h1>
+        
+        <div id="uploadZone" class="glass-card p-12 text-center border-2 border-dashed border-gray-600 hover:border-cyan-400 transition cursor-pointer mb-6">
+            <i class="fas fa-cloud-upload-alt text-5xl text-cyan-400 mb-4"></i>
+            <p class="text-lg mb-2">拖拽音频文件到此处</p>
+            <p class="text-gray-400 text-sm">或点击选择文件</p>
+            <p class="text-gray-500 text-xs mt-2">支持 MP3, WAV, OGG, M4A</p>
+            <input type="file" id="fileInput" accept="audio/*" class="hidden">
+        </div>
+    </div>
+    
+    <div id="analysisSection" class="hidden">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold"><i class="fas fa-music mr-2"></i><span id="result-filename"></span></h2>
+            <button onclick="location.reload()" class="btn-secondary"><i class="fas fa-redo mr-2"></i>重新分析</button>
+        </div>
+        
+        <div class="glass-card p-4 mb-6">
+            <div class="flex items-center gap-4 mb-4">
+                <button id="playBtn" class="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center justify-center">
+                    <i id="playIcon" class="fas fa-play text-xl"></i>
+                </button>
+                <span id="currentTime" class="text-sm text-gray-400">0:00</span>
+                <div id="seekBar" class="flex-1 h-2 bg-gray-700 rounded-full cursor-pointer">
+                    <div id="seekProgress" class="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full" style="width:0%"></div>
+                </div>
+                <span id="totalTime" class="text-sm text-gray-400">0:00</span>
+            </div>
+            <canvas id="realtime-canvas" class="w-full h-24 rounded-lg"></canvas>
+        </div>
+        
+        <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mb-6">
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-duration">--</div>
+                <div class="text-gray-400 text-sm">时长 (秒)</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-sr">--</div>
+                <div class="text-gray-400 text-sm">采样率</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-channels">--</div>
+                <div class="text-gray-400 text-sm">声道数</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-peak">--</div>
+                <div class="text-gray-400 text-sm">峰值电平</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-rms">--</div>
+                <div class="text-gray-400 text-sm">平均能量</div>
+            </div>
+            <div class="glass-card p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="stat-zcr">--</div>
+                <div class="text-gray-400 text-sm">零交叉率</div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-card p-4">
+                <h3 class="font-bold mb-3"><i class="fas fa-wave-square text-cyan-400 mr-2"></i>波形图</h3>
+                <canvas id="waveform-canvas" class="w-full h-48 rounded-lg bg-gray-900"></canvas>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="font-bold mb-3"><i class="fas fa-chart-area text-pink-400 mr-2"></i>频谱图</h3>
+                <canvas id="spectrum-canvas" class="w-full h-48 rounded-lg bg-gray-900"></canvas>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="font-bold mb-3"><i class="fas fa-volume-up text-red-400 mr-2"></i>能量包络</h3>
+                <canvas id="energy-canvas" class="w-full h-48 rounded-lg bg-gray-900"></canvas>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="font-bold mb-3"><i class="fas fa-chart-bar text-green-400 mr-2"></i>频率分布</h3>
+                <canvas id="frequency-canvas" class="w-full h-48 rounded-lg bg-gray-900"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loadingSection" class="hidden text-center py-12">
+        <div class="inline-block w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-lg">正在分析音频...</p>
+    </div>
+</div>
+
+<script>
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const uploadSection = document.getElementById('uploadSection');
+const analysisSection = document.getElementById('analysisSection');
+const loadingSection = document.getElementById('loadingSection');
+
+let audioContext, audioBuffer, sourceNode, analyser, gainNode;
+let isPlaying = false, startTime = 0, pausedAt = 0, animationId;
+
+uploadZone.onclick = () => fileInput.click();
+uploadZone.ondragover = e => { e.preventDefault(); uploadZone.classList.add('border-cyan-400'); };
+uploadZone.ondragleave = () => uploadZone.classList.remove('border-cyan-400');
+uploadZone.ondrop = e => { e.preventDefault(); if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); };
+fileInput.onchange = e => { if (e.target.files[0]) processFile(e.target.files[0]); };
+
+async function processFile(file) {
+    uploadSection.classList.add('hidden');
+    loadingSection.classList.remove('hidden');
+    
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await file.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        const channelData = audioBuffer.getChannelData(0);
+        const duration = audioBuffer.duration.toFixed(2);
+        const sampleRate = audioBuffer.sampleRate;
+        const channels = audioBuffer.numberOfChannels;
+        
+        let peak = 0, sumSquares = 0, zeroCrossings = 0;
+        for (let i = 0; i < channelData.length; i++) {
+            const abs = Math.abs(channelData[i]);
+            if (abs > peak) peak = abs;
+            sumSquares += channelData[i] * channelData[i];
+            if (i > 0 && ((channelData[i] >= 0) !== (channelData[i-1] >= 0))) zeroCrossings++;
+        }
+        const rms = Math.sqrt(sumSquares / channelData.length);
+        
+        const data = {
+            filename: file.name,
+            duration, sampleRate, channels,
+            peak: (20 * Math.log10(peak)).toFixed(1),
+            rms: (20 * Math.log10(rms)).toFixed(1),
+            zcr: (zeroCrossings / channelData.length).toFixed(4),
+            channelData
+        };
+        
+        displayResults(data);
+    } catch (error) {
+        alert('分析失败: ' + error.message);
+        location.reload();
+    }
+}
+
+function displayResults(data) {
+    document.getElementById('result-filename').textContent = data.filename;
+    document.getElementById('stat-duration').textContent = data.duration;
+    document.getElementById('stat-sr').textContent = (data.sampleRate / 1000).toFixed(1) + 'k';
+    document.getElementById('stat-channels').textContent = data.channels;
+    document.getElementById('stat-peak').textContent = data.peak + 'dB';
+    document.getElementById('stat-rms').textContent = data.rms + 'dB';
+    document.getElementById('stat-zcr').textContent = data.zcr;
+    document.getElementById('totalTime').textContent = formatTime(parseFloat(data.duration));
+    
+    loadingSection.classList.add('hidden');
+    analysisSection.classList.remove('hidden');
+    
+    setTimeout(() => {
+        drawWaveform(data.channelData);
+        drawEnergyEnvelope(data.channelData);
+        drawFrequencyDistribution(data.channelData);
+        drawSpectrum(data.channelData);
+        setupAudioPlayer();
+    }, 100);
+}
+
+function formatTime(s) { return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
+
+function drawWaveform(channelData) {
+    const canvas = document.getElementById('waveform-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * 2 || 800;
+    canvas.height = 384;
+    const width = canvas.width, height = canvas.height;
+    const step = Math.ceil(channelData.length / width);
+    
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, width, height);
+    
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, '#00d4ff');
+    gradient.addColorStop(0.5, '#4ecdc4');
+    gradient.addColorStop(1, '#00d4ff');
+    
+    ctx.beginPath();
+    ctx.moveTo(0, height / 2);
+    for (let i = 0; i < width; i++) {
+        let min = 1, max = -1;
+        for (let j = 0; j < step; j++) {
+            const datum = channelData[(i * step) + j];
+            if (datum < min) min = datum;
+            if (datum > max) max = datum;
+        }
+        ctx.lineTo(i, ((1 + min) / 2) * height);
+        ctx.lineTo(i, ((1 + max) / 2) * height);
+    }
+    ctx.strokeStyle = gradient;
+    ctx.stroke();
+}
+
+function drawEnergyEnvelope(channelData) {
+    const canvas = document.getElementById('energy-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * 2 || 800;
+    canvas.height = 384;
+    const width = canvas.width, height = canvas.height;
+    const windowSize = Math.floor(channelData.length / width);
+    const energyData = [];
+    
+    for (let i = 0; i < width; i++) {
+        let sum = 0;
+        for (let j = 0; j < windowSize; j++) {
+            const idx = i * windowSize + j;
+            if (idx < channelData.length) sum += channelData[idx] * channelData[idx];
+        }
+        energyData.push(Math.sqrt(sum / windowSize));
+    }
+    const maxEnergy = Math.max(...energyData);
+    
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, width, height);
+    
+    const gradient = ctx.createLinearGradient(0, height, 0, 0);
+    gradient.addColorStop(0, 'rgba(255, 107, 107, 0.2)');
+    gradient.addColorStop(1, 'rgba(255, 107, 107, 0.8)');
+    
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    for (let i = 0; i < energyData.length; i++) {
+        ctx.lineTo(i, height - (energyData[i] / maxEnergy) * height * 0.9);
+    }
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+}
+
+function drawFrequencyDistribution(channelData) {
+    const canvas = document.getElementById('frequency-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * 2 || 800;
+    canvas.height = 384;
+    const width = canvas.width, height = canvas.height;
+    const numBands = 32;
+    const bandData = new Array(numBands).fill(0);
+    const samplesPerBand = Math.floor(channelData.length / numBands);
+    
+    for (let i = 0; i < numBands; i++) {
+        let sum = 0;
+        for (let j = 0; j < samplesPerBand; j++) {
+            sum += Math.abs(channelData[i * samplesPerBand + j] || 0);
+        }
+        bandData[i] = sum / samplesPerBand;
+    }
+    const maxVal = Math.max(...bandData) || 1;
+    
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, width, height);
+    
+    const barWidth = (width - 40) / numBands;
+    const colors = ['#4ecdc4', '#00d4ff', '#ff6b6b', '#ffd93d'];
+    
+    for (let i = 0; i < numBands; i++) {
+        const barHeight = (bandData[i] / maxVal) * (height - 40);
+        const x = 20 + i * barWidth;
+        const gradient = ctx.createLinearGradient(x, height - 20, x, height - 20 - barHeight);
+        gradient.addColorStop(0, colors[i % colors.length] + '40');
+        gradient.addColorStop(1, colors[i % colors.length]);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x + 2, height - 20 - barHeight, barWidth - 4, barHeight);
+    }
+}
+
+function drawSpectrum(channelData) {
+    const canvas = document.getElementById('spectrum-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * 2 || 800;
+    canvas.height = 384;
+    const width = canvas.width, height = canvas.height;
+    const numCols = Math.min(width, 400);
+    const numRows = 64;
+    const samplesPerCol = Math.floor(channelData.length / numCols);
+    
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, width, height);
+    
+    const colWidth = width / numCols;
+    const rowHeight = height / numRows;
+    
+    for (let col = 0; col < numCols; col++) {
+        const segment = channelData.slice(col * samplesPerCol, (col + 1) * samplesPerCol);
+        for (let row = 0; row < numRows; row++) {
+            const start = Math.floor(row * segment.length / numRows);
+            const end = Math.floor((row + 1) * segment.length / numRows);
+            let energy = 0;
+            for (let i = start; i < end; i++) energy += Math.abs(segment[i] || 0);
+            energy = energy / (end - start) * (numRows - row) / numRows;
+            const n = Math.min(energy * 5, 1);
+            ctx.fillStyle = `rgb(${Math.floor(n*255)},${Math.floor((1-n)*100)},${Math.floor((1-n)*200+n*100)})`;
+            ctx.fillRect(col * colWidth, (numRows - 1 - row) * rowHeight, colWidth, rowHeight);
+        }
+    }
+}
+
+function setupAudioPlayer() {
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    gainNode = audioContext.createGain();
+    
+    document.getElementById('playBtn').onclick = togglePlay;
+    document.getElementById('seekBar').onclick = seek;
+    
+    const canvas = document.getElementById('realtime-canvas');
+    canvas.width = canvas.offsetWidth * 2 || 800;
+    canvas.height = 192;
+}
+
+function togglePlay() {
+    if (isPlaying) pauseAudio();
+    else playAudio();
+}
+
+async function playAudio() {
+    if (audioContext.state === 'suspended') await audioContext.resume();
+    
+    sourceNode = audioContext.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+    sourceNode.connect(analyser);
+    analyser.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    sourceNode.start(0, pausedAt);
+    startTime = audioContext.currentTime - pausedAt;
+    isPlaying = true;
+    document.getElementById('playIcon').classList.replace('fa-play', 'fa-pause');
+    sourceNode.onended = () => { if (isPlaying) stopAudio(); };
+    updateRealtime();
+}
+
+function pauseAudio() {
+    if (sourceNode) { sourceNode.stop(); pausedAt = audioContext.currentTime - startTime; }
+    isPlaying = false;
+    document.getElementById('playIcon').classList.replace('fa-pause', 'fa-play');
+    cancelAnimationFrame(animationId);
+}
+
+function stopAudio() {
+    pauseAudio();
+    pausedAt = 0;
+    document.getElementById('seekProgress').style.width = '0%';
+    document.getElementById('currentTime').textContent = '0:00';
+}
+
+function seek(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    pausedAt = percent * audioBuffer.duration;
+    if (isPlaying) { sourceNode.stop(); playAudio(); }
+    else {
+        document.getElementById('seekProgress').style.width = (percent * 100) + '%';
+        document.getElementById('currentTime').textContent = formatTime(pausedAt);
+    }
+}
+
+function updateRealtime() {
+    if (!isPlaying) return;
+    
+    const currentTime = audioContext.currentTime - startTime;
+    const progress = (currentTime / audioBuffer.duration) * 100;
+    document.getElementById('seekProgress').style.width = progress + '%';
+    document.getElementById('currentTime').textContent = formatTime(currentTime);
+    
+    const canvas = document.getElementById('realtime-canvas');
+    const ctx = canvas.getContext('2d');
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
+    
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const barWidth = canvas.width / bufferLength * 2.5;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+        gradient.addColorStop(0, '#00d4ff');
+        gradient.addColorStop(1, '#4ecdc4');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+        x += barWidth;
+    }
+    
+    animationId = requestAnimationFrame(updateRealtime);
+}
+</script>
+{% endblock %}

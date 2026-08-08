@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}用户管理 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-shield-alt text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">管理后台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-tachometer-alt w-5"></i>控制台
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-users w-5"></i>用户管理
+        </a>
+        <a href="{{ url_for('admin_vip') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5"></i>VIP管理
+        </a>
+        <a href="{{ url_for('admin_logs') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-history w-5"></i>日志管理
+        </a>
+        <a href="{{ url_for('admin_stats') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-pie w-5"></i>数据统计
+        </a>
+        <a href="{{ url_for('admin_visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <h1 class="text-2xl font-bold mb-6"><i class="fas fa-users text-cyan-400 mr-2"></i>用户管理</h1>
+    
+    <div class="glass-card overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-white/5">
+                <tr>
+                    <th class="text-left p-4">用户名</th>
+                    <th class="text-left p-4">邮箱</th>
+                    <th class="text-left p-4">注册时间</th>
+                    <th class="text-left p-4">最后登录</th>
+                    <th class="text-left p-4">VIP状态</th>
+                    <th class="text-left p-4">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="border-t border-white/5 hover:bg-white/5">
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center justify-center text-sm">
+                                {{ user.username[0].upper() }}
+                            </div>
+                            {{ user.username }}
+                        </div>
+                    </td>
+                    <td class="p-4 text-gray-400">{{ user.email }}</td>
+                    <td class="p-4 text-gray-400">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="p-4 text-gray-400">{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '-' }}</td>
+                    <td class="p-4">
+                        {% if user.is_vip_active() %}
+                            <span class="vip-badge"><i class="fas fa-crown mr-1"></i>VIP</span>
+                            <span class="text-xs text-gray-400 ml-2">{{ user.vip_expire_date.strftime('%Y-%m-%d') }}</span>
+                        {% else %}
+                            <span class="text-gray-500">普通用户</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4">
+                        <button onclick="toggleVip({{ user.id }})" class="btn-secondary text-sm mr-2">
+                            {% if user.is_vip_active() %}取消VIP{% else %}开通VIP{% endif %}
+                        </button>
+                        <button onclick="deleteUser({{ user.id }}, '{{ user.username }}')" class="text-red-400 hover:text-red-300">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not users %}
+        <div class="text-center text-gray-400 py-12">暂无用户</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleVip(userId) {
+    const days = prompt('请输入VIP天数:', '30');
+    if (days) {
+        fetch(`/admin/user/${userId}/toggle_vip`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({days: parseInt(days)})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+    }
+}
+
+function deleteUser(userId, username) {
+    if (confirm(`确定删除用户 ${username} 吗？此操作不可恢复！`)) {
+        fetch(`/admin/user/${userId}/delete`, {
+            method: 'POST'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message);
+        });
+    }
+}
+</script>
+{% endblock %}

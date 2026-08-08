@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}音乐平台{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #ff6b6b;
+            --accent: #4ecdc4;
+            --bg-dark: #0f0f1a;
+            --bg-card: #1a1a2e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #16213e 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .glass-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .song-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .song-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+        }
+        .song-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .vip-badge {
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .flash-message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .flash-success { background: rgba(78, 205, 196, 0.2); border: 1px solid var(--accent); }
+        .flash-error { background: rgba(255, 107, 107, 0.2); border: 1px solid var(--secondary); }
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar {
+            width: 240px;
+            background: rgba(26, 26, 46, 0.9);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .mode-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mode-btn.active, .mode-btn:hover {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-color: transparent;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.5s ease; }
+        
+        /* 全局迷你播放器 */
+        .mini-player {
+            position: fixed;
+            bottom: 0;
+            left: 240px;
+            right: 0;
+            height: 70px;
+            background: rgba(15, 15, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        .mini-player.active { display: flex; }
+        .mini-player-btn {
+            margin-right: 12px;
+        }
+        .mini-player-song-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .mini-player-song-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .mini-player-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+        .mini-player-info { flex: 1; min-width: 0; }
+        .mini-player-title {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mini-player-artist {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+        .mini-player-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .mini-player-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mini-player-progress {
+            flex: 2;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 20px;
+            cursor: pointer;
+        }
+        .mini-player-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+            width: 0%;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <!-- 全局迷你播放器 -->
+    <div id="miniPlayer" class="mini-player">
+        <button class="mini-player-btn" onclick="miniTogglePlay()">
+            <i id="miniPlayIcon" class="fas fa-play"></i>
+        </button>
+        <a id="miniSongLink" href="#" class="mini-player-song-link">
+            <img id="miniCover" class="mini-player-cover" src="" alt="">
+            <div class="mini-player-info">
+                <div id="miniTitle" class="mini-player-title"></div>
+                <div id="miniArtist" class="mini-player-artist"></div>
+            </div>
+        </a>
+        <div class="mini-player-progress" onclick="miniSeek(event)">
+            <div id="miniProgressBar" class="mini-player-progress-bar"></div>
+        </div>
+        <div class="mini-player-controls">
+            <a id="miniExpandBtn" href="#" class="text-white hover:text-blue-400">
+                <i class="fas fa-expand"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 全局音频元素 -->
+    <audio id="globalAudio" style="display:none;"></audio>
+    
+    <script>
+    // 全局播放器状态管理
+    const globalAudio = document.getElementById('globalAudio');
+    const miniPlayer = document.getElementById('miniPlayer');
+    
+    // 从localStorage恢复播放状态
+    function initMiniPlayer() {
+        const savedSong = localStorage.getItem('currentSong');
+        const savedUrl = localStorage.getItem('currentAudioUrl');
+        if (savedSong && savedUrl) {
+            const song = JSON.parse(savedSong);
+            updateMiniPlayer(song);
+            miniPlayer.classList.add('active');
+            
+            // 恢复音频URL
+            globalAudio.src = savedUrl;
+            
+            // 恢复播放位置
+            const savedTime = localStorage.getItem('currentTime');
+            globalAudio.addEventListener('loadedmetadata', function() {
+                if (savedTime) {
+                    globalAudio.currentTime = parseFloat(savedTime);
+                }
+            }, {once: true});
+        }
+    }
+    
+    function updateMiniPlayer(song) {
+        const playUrl = `/play/${song.id}?name=${encodeURIComponent(song.name)}&artist=${encodeURIComponent(song.artist)}&cover=${encodeURIComponent(song.cover || '')}`;
+        document.getElementById('miniCover').src = song.cover || '';
+        document.getElementById('miniTitle').textContent = song.name;
+        document.getElementById('miniArtist').textContent = song.artist;
+        document.getElementById('miniSongLink').href = playUrl;
+        document.getElementById('miniExpandBtn').href = playUrl;
+    }
+    
+    function miniTogglePlay() {
+        if (globalAudio.paused) {
+            globalAudio.play();
+            document.getElementById('miniPlayIcon').className = 'fas fa-pause';
+        } else {
+            globalAudio.pause();
+            document.getElementById('miniPlayIcon').className = 'fas fa-play';
+        }
+    }
+    
+    function miniSeek(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        globalAudio.currentTime = percent * globalAudio.duration;
+    }
+    
+    globalAudio.addEventListener('timeupdate', () => {
+        const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
+        document.getElementById('miniProgressBar').style.width = percent + '%';
+        // 保存播放位置
+        localStorage.setItem('currentTime', globalAudio.currentTime);
+    });
+    
+    globalAudio.addEventListener('play', () => {
+        document.getElementById('miniPlayIcon').className = 'fas fa-pause';
+    });
+    
+    globalAudio.addEventListener('pause', () => {
+        document.getElementById('miniPlayIcon').className = 'fas fa-play';
+    });
+    
+    // 页面加载时初始化
+    initMiniPlayer();
+    
+    // 将全局音频暴露给子页面
+    window.globalAudio = globalAudio;
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

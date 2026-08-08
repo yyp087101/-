@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}音乐平台 - 发现好音乐{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-12 fade-in">
+        <i class="fas fa-music text-7xl text-cyan-400 mb-6"></i>
+        <h1 class="text-5xl font-bold gradient-text mb-4">音乐平台</h1>
+        <p class="text-xl text-gray-400">发现、聆听、分享好音乐</p>
+    </div>
+    
+    <div class="flex gap-4 fade-in">
+        <a href="{{ url_for('login') }}" class="btn-primary text-lg px-8 py-4">
+            <i class="fas fa-sign-in-alt mr-2"></i>登录
+        </a>
+        <a href="{{ url_for('register') }}" class="btn-secondary text-lg px-8 py-4">
+            <i class="fas fa-user-plus mr-2"></i>注册
+        </a>
+    </div>
+    
+    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl fade-in">
+        <div class="glass-card p-6 text-center">
+            <i class="fas fa-search text-4xl text-cyan-400 mb-4"></i>
+            <h3 class="font-bold text-lg mb-2">搜索音乐</h3>
+            <p class="text-gray-400 text-sm">海量音乐资源，一搜即得</p>
+        </div>
+        <div class="glass-card p-6 text-center">
+            <i class="fas fa-chart-bar text-4xl text-pink-400 mb-4"></i>
+            <h3 class="font-bold text-lg mb-2">可视化分析</h3>
+            <p class="text-gray-400 text-sm">波形、频谱、能量分析</p>
+        </div>
+        <div class="glass-card p-6 text-center">
+            <i class="fas fa-crown text-4xl text-yellow-400 mb-4"></i>
+            <h3 class="font-bold text-lg mb-2">VIP特权</h3>
+            <p class="text-gray-400 text-sm">MV观看、无损音质</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

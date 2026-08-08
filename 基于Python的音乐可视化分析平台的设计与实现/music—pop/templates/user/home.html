@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}首页 - 音乐平台{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+        <i class="fas fa-music text-3xl text-cyan-400"></i>
+        <span class="text-xl font-bold gradient-text">音乐平台</span>
+    </div>
+    
+    <nav class="space-y-2">
+        <a href="{{ url_for('user_home') }}" class="nav-link flex items-center gap-3 active">
+            <i class="fas fa-home w-5"></i>首页
+        </a>
+        <a href="{{ url_for('search') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-search w-5"></i>搜索
+        </a>
+        <a href="{{ url_for('favorites') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-heart w-5"></i>我的收藏
+        </a>
+        <a href="{{ url_for('visualizer') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-chart-bar w-5"></i>音乐可视化
+        </a>
+        <a href="{{ url_for('vip_page') }}" class="nav-link flex items-center gap-3">
+            <i class="fas fa-crown w-5 text-yellow-400"></i>VIP会员
+        </a>
+    </nav>
+    
+    <div class="absolute bottom-4 left-4 right-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 flex items-center justify-center">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <div class="font-medium">{{ current_user.username }}</div>
+                {% if is_vip %}
+                    <span class="vip-badge"><i class="fas fa-crown mr-1"></i>VIP</span>
+                {% endif %}
+            </div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn-secondary w-full text-center block">
+            <i class="fas fa-sign-out-alt mr-2"></i>退出
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold mb-4">听歌模式</h1>
+        <div class="flex gap-3 flex-wrap">
+            <a href="{{ url_for('user_home', mode='default') }}" class="mode-btn {{ 'active' if mode == 'default' else '' }}">
+                <i class="fas fa-music mr-2"></i>默认模式
+            </a>
+            <a href="{{ url_for('user_home', mode='familiar') }}" class="mode-btn {{ 'active' if mode == 'familiar' else '' }}">
+                <i class="fas fa-heart mr-2"></i>熟悉模式
+            </a>
+            <a href="{{ url_for('user_home', mode='fresh') }}" class="mode-btn {{ 'active' if mode == 'fresh' else '' }}">
+                <i class="fas fa-sparkles mr-2"></i>新鲜模式
+            </a>
+        </div>
+        <p class="text-gray-400 mt-2 text-sm">
+            {% if mode == 'default' %}
+                为您推荐热门好听的音乐
+            {% elif mode == 'familiar' %}
+                根据您的听歌喜好推荐相似歌曲
+            {% else %}
+                发现您还没听过的新歌
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-fire text-red-400 mr-2"></i>热门歌曲（本站播放统计）</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {% for song in hot_songs %}
+            <a href="{{ url_for('play_song', song_id=song.id, name=song.name, artist=song.artist, cover=song.cover) }}" class="song-card">
+                <img src="{{ song.cover or 'https://via.placeholder.com/200' }}" class="song-cover mb-2" alt="{{ song.name }}">
+                <div class="font-medium text-sm truncate">{{ song.name }}</div>
+                <div class="text-gray-400 text-xs truncate">{{ song.artist }}</div>
+                {% if song.play_count %}<div class="text-cyan-400 text-xs"><i class="fas fa-play mr-1"></i>{{ song.play_count }}</div>{% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-star text-yellow-400 mr-2"></i>
+            {% if mode == 'familiar' %}最近在听{% elif mode == 'fresh' %}新歌推荐{% else %}大家在收藏{% endif %}
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {% for song in recommend_songs %}
+            <a href="{{ url_for('play_song', song_id=song.id, name=song.name, artist=song.artist, cover=song.cover) }}" class="song-card">
+                <img src="{{ song.cover or 'https://via.placeholder.com/200' }}" class="song-cover mb-2" alt="{{ song.name }}">
+                <div class="font-medium text-sm truncate">{{ song.name }}</div>
+                <div class="text-gray-400 text-xs truncate">{{ song.artist }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
