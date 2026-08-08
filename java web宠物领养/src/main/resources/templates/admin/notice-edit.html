@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('编辑公告 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span th:text="${notice != null} ? '&#128227; 编辑公告' : '&#128227; 发布公告'"></span>
+                <a href="javascript:history.back()" class="btn btn-sm btn-outline">返回</a>
+            </div>
+            <div class="card-body" style="max-width:700px">
+                <form id="noticeForm">
+                    <input type="hidden" name="id" th:value="${notice?.id}">
+                    <div class="form-group">
+                        <label>公告标题 *</label>
+                        <input type="text" class="form-control" name="title" th:value="${notice?.title}" placeholder="请输入公告标题" required>
+                    </div>
+                    <div class="form-group">
+                        <label>公告内容 *</label>
+                        <textarea class="form-control" name="content" rows="10" th:text="${notice?.content}" placeholder="请输入公告内容" required></textarea>
+                    </div>
+                    <div class="form-group" th:if="${notice != null}">
+                        <label>状态</label>
+                        <select class="form-control" name="status">
+                            <option value="1" th:selected="${notice.status == 1}">发布</option>
+                            <option value="0" th:selected="${notice.status == 0}">下架</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveNotice()">保存</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function saveNotice() {
+    var data = serializeForm('noticeForm');
+    if (!data.title || !data.content) { showToast('请填写完整信息', 'error'); return; }
+    ajaxPost('/admin/notice/save', data, function(res) {
+        if (res.code === 200) {
+            showToast('保存成功');
+            setTimeout(function() { window.location.href = '/admin/notice/list'; }, 1000);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+</script>
+</body>
+</html>

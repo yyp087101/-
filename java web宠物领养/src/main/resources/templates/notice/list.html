@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('公告列表 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+<div class="main-content">
+    <div class="card">
+        <div class="card-header">
+            <span>&#128227; 公告信息</span>
+            <form class="form-inline" method="get" th:action="@{/notice/list}">
+                <input type="text" name="keyword" class="form-control" placeholder="搜索公告标题" th:value="${keyword}">
+                <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <div th:if="${page.records != null and !page.records.isEmpty()}">
+                <div th:each="notice : ${page.records}" class="notice-item" style="padding:16px 0;border-bottom:1px solid #f0f0f0">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <a th:href="@{'/notice/detail/' + ${notice.id}}" style="font-size:16px;font-weight:500" th:text="${notice.title}"></a>
+                        <span style="color:#aaa;font-size:13px" th:text="${#temporals.format(notice.createTime, 'yyyy-MM-dd')}"></span>
+                    </div>
+                    <p style="color:#888;font-size:14px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                       th:text="${notice.content}"></p>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${page.records == null or page.records.isEmpty()}">
+                <div class="empty-icon">&#128227;</div>
+                <p>暂无公告</p>
+            </div>
+            <div th:replace="common/header :: pagination(${page}, '/notice/list?keyword=' + (${keyword} ?: ''))"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/common.js}"></script>
+</body>
+</html>

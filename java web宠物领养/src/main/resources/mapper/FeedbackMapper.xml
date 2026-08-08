@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petadoption.mapper.FeedbackMapper">
+
+    <resultMap id="feedbackDetailMap" type="com.petadoption.entity.Feedback">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="reply" property="reply"/>
+        <result column="reply_id" property="replyId"/>
+        <result column="reply_time" property="replyTime"/>
+        <result column="create_time" property="createTime"/>
+        <association property="user" javaType="com.petadoption.entity.User">
+            <id column="u_id" property="id"/>
+            <result column="u_username" property="username"/>
+            <result column="u_realname" property="realname"/>
+        </association>
+    </resultMap>
+
+    <select id="selectPageWithUser" resultMap="feedbackDetailMap">
+        SELECT f.*,
+               u.id as u_id, u.username as u_username, u.realname as u_realname
+        FROM feedback f
+        LEFT JOIN user u ON f.user_id = u.id
+        <where>
+            <if test="userId != null">AND f.user_id = #{userId}</if>
+        </where>
+        ORDER BY f.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('编辑宠物 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span th:text="${pet != null} ? '&#128054; 编辑宠物' : '&#128054; 添加宠物'"></span>
+                <a href="javascript:history.back()" class="btn btn-sm btn-outline">返回</a>
+            </div>
+            <div class="card-body" style="max-width:700px">
+                <form id="petForm">
+                    <input type="hidden" name="id" th:value="${pet?.id}">
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>宠物名称 *</label>
+                            <input type="text" class="form-control" name="name" th:value="${pet?.name}" placeholder="请输入宠物名称" required>
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>宠物类型 *</label>
+                            <select class="form-control" name="type" required>
+                                <option value="">请选择</option>
+                                <option value="猫" th:selected="${pet != null and pet.type == '猫'}">猫</option>
+                                <option value="狗" th:selected="${pet != null and pet.type == '狗'}">狗</option>
+                                <option value="仓鼠" th:selected="${pet != null and pet.type == '仓鼠'}">仓鼠</option>
+                                <option value="兔子" th:selected="${pet != null and pet.type == '兔子'}">兔子</option>
+                                <option value="其他" th:selected="${pet != null and pet.type == '其他'}">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>品种</label>
+                            <input type="text" class="form-control" name="breed" th:value="${pet?.breed}" placeholder="请输入品种">
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>年龄</label>
+                            <input type="text" class="form-control" name="age" th:value="${pet?.age}" placeholder="如：2岁">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>性别</label>
+                            <select class="form-control" name="gender">
+                                <option value="1" th:selected="${pet == null or pet.gender == 1}">公</option>
+                                <option value="0" th:selected="${pet != null and pet.gender == 0}">母</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>颜色</label>
+                            <input type="text" class="form-control" name="color" th:value="${pet?.color}" placeholder="请输入颜色">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>体重(kg)</label>
+                            <input type="number" step="0.1" class="form-control" name="weight" th:value="${pet?.weight}" placeholder="请输入体重">
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:200px">
+                            <label>健康状况</label>
+                            <input type="text" class="form-control" name="healthStatus" th:value="${pet?.healthStatus}" placeholder="如：健康，已免疫">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>宠物图片</label>
+                        <div style="display:flex;gap:12px;align-items:flex-end">
+                            <input type="file" id="imageFile" accept="image/*" onchange="previewImage('imageFile','imagePreview')">
+                            <button type="button" class="btn btn-sm btn-info" onclick="doUpload()">上传图片</button>
+                        </div>
+                        <input type="hidden" name="image" id="imageUrl" th:value="${pet?.image}">
+                        <img id="imagePreview" th:src="${pet?.image}" style="max-width:200px;margin-top:10px;border-radius:8px"
+                             th:style="${pet != null and pet.image != null and pet.image != ''} ? 'display:block' : 'display:none'">
+                    </div>
+                    <div class="form-group">
+                        <label>描述信息</label>
+                        <textarea class="form-control" name="description" rows="4" th:text="${pet?.description}" placeholder="请输入宠物描述信息"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="savePet()">保存</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function doUpload() {
+    uploadFile('imageFile', function(url) {
+        document.getElementById('imageUrl').value = url;
+        document.getElementById('imagePreview').src = url;
+        document.getElementById('imagePreview').style.display = 'block';
+        showToast('图片上传成功');
+    });
+}
+function savePet() {
+    var data = serializeForm('petForm');
+    if (!data.name || !data.type) { showToast('请填写必要信息', 'error'); return; }
+    ajaxPost('/admin/pet/save', data, function(res) {
+        if (res.code === 200) {
+            showToast('保存成功');
+            setTimeout(function() { window.location.href = '/admin/pet/list'; }, 1000);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+</script>
+</body>
+</html>

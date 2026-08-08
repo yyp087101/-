@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('领养审核 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128220; 领养审核</span>
+                <form class="form-inline" method="get" th:action="@{/admin/adoption/list}">
+                    <select name="status" class="form-control">
+                        <option value="">全部状态</option>
+                        <option value="0" th:selected="${status != null and status == 0}">待审核</option>
+                        <option value="1" th:selected="${status != null and status == 1}">已通过</option>
+                        <option value="2" th:selected="${status != null and status == 2}">已拒绝</option>
+                        <option value="3" th:selected="${status != null and status == 3}">已取消</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">筛选</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>申请人</th>
+                            <th>联系电话</th>
+                            <th>宠物名称</th>
+                            <th>宠物类型</th>
+                            <th>申请时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${page.records}">
+                            <td th:text="${item.id}"></td>
+                            <td th:text="${item.user?.realname ?: item.user?.username}"></td>
+                            <td th:text="${item.user?.phone ?: '-'}"></td>
+                            <td th:text="${item.pet?.name ?: '未知'}"></td>
+                            <td th:text="${item.pet?.type ?: '未知'}"></td>
+                            <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <span class="badge badge-warning" th:if="${item.status == 0}">待审核</span>
+                                <span class="badge badge-success" th:if="${item.status == 1}">已通过</span>
+                                <span class="badge badge-danger" th:if="${item.status == 2}">已拒绝</span>
+                                <span class="badge badge-secondary" th:if="${item.status == 3}">已取消</span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/admin/adoption/detail/' + ${item.id}}" class="btn btn-sm btn-info">详情</a>
+                                <button th:if="${item.status == 0}" class="btn btn-sm btn-success" th:onclick="'reviewAdoption(' + ${item.id} + ', 1)'">通过</button>
+                                <button th:if="${item.status == 0}" class="btn btn-sm btn-danger" th:attr="data-id=${item.id}" onclick="showRejectModal(this)">拒绝</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="common/header :: pagination(${page}, '/admin/adoption/list?status=' + (${status} ?: ''))"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>拒绝领养申请</span>
+            <button class="close-btn" onclick="closeModal('rejectModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="rejectId">
+            <div class="form-group">
+                <label>拒绝原因</label>
+                <textarea class="form-control" id="rejectComment" rows="3" placeholder="请输入拒绝原因"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('rejectModal')">取消</button>
+            <button class="btn btn-danger" onclick="doReject()">确认拒绝</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+function reviewAdoption(id, status) {
+    confirmAction('确定通过该领养申请？通过后该宠物将标记为已领养。', function() {
+        ajaxPost('/admin/adoption/review', {id: id, status: status, reviewComment: '审核通过'}, function(res) {
+            if (res.code === 200) { showToast('审核成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+function showRejectModal(btn) {
+    document.getElementById('rejectId').value = btn.getAttribute('data-id');
+    document.getElementById('rejectComment').value = '';
+    openModal('rejectModal');
+}
+function doReject() {
+    var id = document.getElementById('rejectId').value;
+    var comment = document.getElementById('rejectComment').value;
+    ajaxPost('/admin/adoption/review', {id: id, status: 2, reviewComment: comment}, function(res) {
+        if (res.code === 200) { showToast('已拒绝'); closeModal('rejectModal'); setTimeout(function(){location.reload();}, 800); }
+        else { showToast(res.msg, 'error'); }
+    });
+}
+</script>
+</body>
+</html>

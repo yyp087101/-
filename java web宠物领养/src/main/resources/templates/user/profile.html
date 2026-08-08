@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('个人中心 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+<div class="main-content">
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div class="card" style="flex:1;min-width:320px">
+            <div class="card-header"><span>&#128100; 个人信息</span></div>
+            <div class="card-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" class="form-control" th:value="${session.loginUser.username}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>真实姓名</label>
+                        <input type="text" class="form-control" name="realname" th:value="${session.loginUser.realname}">
+                    </div>
+                    <div class="form-group">
+                        <label>手机号</label>
+                        <input type="text" class="form-control" name="phone" th:value="${session.loginUser.phone}">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" class="form-control" name="email" th:value="${session.loginUser.email}">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="updateProfile()">保存修改</button>
+                </form>
+            </div>
+        </div>
+        <div class="card" style="flex:1;min-width:320px">
+            <div class="card-header"><span>&#128274; 修改密码</span></div>
+            <div class="card-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label>原密码</label>
+                        <input type="password" class="form-control" id="oldPassword" name="oldPassword" placeholder="请输入原密码" required>
+                    </div>
+                    <div class="form-group">
+                        <label>新密码</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="请输入新密码" required>
+                    </div>
+                    <div class="form-group">
+                        <label>确认新密码</label>
+                        <input type="password" class="form-control" id="newPassword2" placeholder="请再次输入新密码" required>
+                    </div>
+                    <button type="button" class="btn btn-warning" onclick="changePassword()">修改密码</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function updateProfile() {
+    var data = serializeForm('profileForm');
+    ajaxPost('/user/update', data, function(res) {
+        if (res.code === 200) {
+            showToast('修改成功');
+            setTimeout(function() { location.reload(); }, 1000);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+function changePassword() {
+    var oldPwd = document.getElementById('oldPassword').value;
+    var newPwd = document.getElementById('newPassword').value;
+    var newPwd2 = document.getElementById('newPassword2').value;
+    if (!oldPwd || !newPwd) { showToast('请填写完整信息', 'error'); return; }
+    if (newPwd.length < 6) { showToast('新密码长度不能少于6位', 'error'); return; }
+    if (newPwd !== newPwd2) { showToast('两次密码输入不一致', 'error'); return; }
+    ajaxPost('/user/changePassword', {oldPassword: oldPwd, newPassword: newPwd}, function(res) {
+        if (res.code === 200) {
+            showToast('密码修改成功，请重新登录');
+            setTimeout(function() { window.location.href = '/login'; }, 1500);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+</script>
+</body>
+</html>

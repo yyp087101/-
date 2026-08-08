@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('宠物中心 - 宠物领养')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+
+<!-- 页面顶部横幅 -->
+<div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);padding:50px 0 40px;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:url('/images/pets-bg.jpg');background-size:cover;background-position:center;opacity:0.15"></div>
+    <div style="position:relative;z-index:1">
+        <div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:10px;letter-spacing:2px">PET CENTER</div>
+        <h1 style="font-size:38px;font-weight:800;color:#fff;margin-bottom:10px">🐾 宠物中心</h1>
+        <p style="color:rgba(255,255,255,0.7);font-size:16px">遇见你的缘分，给每只宠物一个温暖的家</p>
+    </div>
+</div>
+
+<!-- 筛选栏 -->
+<div style="background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:68px;z-index:99;box-shadow:0 2px 10px rgba(0,0,0,0.04)">
+    <div style="max-width:1200px;margin:0 auto;padding:14px 24px">
+        <form class="form-inline" method="get" th:action="@{/pet/list}" style="gap:12px">
+            <!-- 类型筛选按钮 -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <a th:href="@{/pet/list(keyword=${keyword})}"
+                   th:class="${type == null or type == ''} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">全部🐾</a>
+                <a th:href="@{/pet/list(keyword=${keyword},type='猫')}"
+                   th:class="${type == '猫'} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">🐱 猫</a>
+                <a th:href="@{/pet/list(keyword=${keyword},type='狗')}"
+                   th:class="${type == '狗'} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">🐶 狗</a>
+                <a th:href="@{/pet/list(keyword=${keyword},type='仓鼠')}"
+                   th:class="${type == '仓鼠'} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">🐹 仓鼠</a>
+                <a th:href="@{/pet/list(keyword=${keyword},type='兔子')}"
+                   th:class="${type == '兔子'} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">🐰 兔子</a>
+                <a th:href="@{/pet/list(keyword=${keyword},type='其他')}"
+                   th:class="${type == '其他'} ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'">🦜 其他</a>
+            </div>
+            <div style="flex:1;min-width:200px;display:flex;gap:8px">
+                <input type="hidden" name="type" th:value="${type}">
+                <input type="text" name="keyword" class="form-control" placeholder="🔍 搜索名称、品种..." th:value="${keyword}" style="border-radius:20px">
+                <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;border-radius:20px;padding:6px 18px">搜索</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="main-content">
+    <!-- 结果统计 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <p style="color:#888;font-size:14px">
+            共找到 <strong style="color:var(--primary)" th:text="${page.total}">0</strong> 只待领养宠物
+            <span th:if="${keyword != null and keyword != ''}" style="margin-left:8px">
+                · 关键词: <strong th:text="${keyword}"></strong>
+                <a th:href="@{/pet/list}" style="color:#aaa;margin-left:6px;font-size:12px">✕ 清除</a>
+            </span>
+        </p>
+        <p style="color:#bbb;font-size:13px">🐾 让每只宠物都找到爱</p>
+    </div>
+
+    <!-- 宠物卡片网格 -->
+    <div class="pet-grid" th:if="${page.records != null and !page.records.isEmpty()}">
+        <div class="pet-card" th:each="pet : ${page.records}">
+            <div class="pet-image">
+                <img th:if="${pet.image != null and pet.image != ''}" th:src="${pet.image}" th:alt="${pet.name}">
+                <span th:if="${pet.image == null or pet.image == ''}"
+                      th:text="${pet.type == '猫'} ? '🐱' : (${pet.type == '狗'} ? '🐶' : (${pet.type == '仓鼠'} ? '🐹' : (${pet.type == '兔子'} ? '🐰' : '🐾')))"></span>
+                <div class="pet-type-badge" th:text="${pet.type}"></div>
+            </div>
+            <div class="pet-info">
+                <h3 th:text="${pet.name}">宠物名</h3>
+                <div class="pet-meta">
+                    <span class="meta-item">🦴 <span th:text="${pet.breed != null and pet.breed != '' ? pet.breed : '未知品种'}"></span></span>
+                    <span class="meta-item">📅 <span th:text="${pet.age != null and pet.age != '' ? pet.age : '未知'}"></span></span>
+                    <span class="meta-item" th:text="${pet.gender == 1} ? '♂ 公' : '♀ 母'"></span>
+                    <span class="meta-item">💚 <span th:text="${pet.healthStatus != null and pet.healthStatus != '' ? pet.healthStatus : '健康'}"></span></span>
+                </div>
+            </div>
+            <div class="pet-actions">
+                <a th:href="@{'/pet/detail/' + ${pet.id}}" class="btn btn-primary btn-block" style="font-size:13px">
+                    查看详情 →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty-state" th:if="${page.records == null or page.records.isEmpty()}">
+        <span class="empty-icon">🔍</span>
+        <p>暂时没有找到符合条件的宠物</p>
+        <p class="empty-hint">试试调整筛选条件，或者查看全部宠物</p>
+        <a th:href="@{/pet/list}" class="btn btn-primary" style="margin-top:16px">查看全部宠物</a>
+    </div>
+
+    <div th:replace="common/header :: pagination(${page}, '/pet/list?keyword=' + (${keyword} ?: '') + '&type=' + (${type} ?: ''))"></div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-bottom" style="padding:24px 40px">
+        © 2024 宠物领养平台 · 让爱回家 · 领养代替购买 🐾
+    </div>
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
+</body>
+</html>

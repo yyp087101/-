@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('领养详情 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128220; 领养申请详情</span>
+                <a href="javascript:history.back()" class="btn btn-sm btn-outline">返回</a>
+            </div>
+            <div class="card-body">
+                <div style="display:flex;gap:30px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:280px">
+                        <h3 style="margin-bottom:16px;color:var(--primary)">申请人信息</h3>
+                        <div class="info-row"><span class="label">用户名</span><span class="value" th:text="${adoption.user?.username}"></span></div>
+                        <div class="info-row"><span class="label">真实姓名</span><span class="value" th:text="${adoption.user?.realname}"></span></div>
+                        <div class="info-row"><span class="label">联系电话</span><span class="value" th:text="${adoption.user?.phone ?: '-'}"></span></div>
+                    </div>
+                    <div style="flex:1;min-width:280px">
+                        <h3 style="margin-bottom:16px;color:var(--primary)">宠物信息</h3>
+                        <div class="info-row"><span class="label">宠物名称</span><span class="value" th:text="${adoption.pet?.name}"></span></div>
+                        <div class="info-row"><span class="label">宠物类型</span><span class="value" th:text="${adoption.pet?.type}"></span></div>
+                        <div class="info-row"><span class="label">宠物品种</span><span class="value" th:text="${adoption.pet?.breed}"></span></div>
+                    </div>
+                </div>
+                <div style="margin-top:24px">
+                    <h3 style="margin-bottom:16px;color:var(--primary)">申请详情</h3>
+                    <div class="info-row"><span class="label">领养理由</span><span class="value" th:text="${adoption.reason}"></span></div>
+                    <div class="info-row"><span class="label">居住地址</span><span class="value" th:text="${adoption.address}"></span></div>
+                    <div class="info-row"><span class="label">养宠经验</span><span class="value" th:text="${adoption.experience ?: '无'}"></span></div>
+                    <div class="info-row"><span class="label">申请时间</span><span class="value" th:text="${#temporals.format(adoption.createTime, 'yyyy-MM-dd HH:mm')}"></span></div>
+                    <div class="info-row">
+                        <span class="label">审核状态</span>
+                        <span class="value">
+                            <span class="badge badge-warning" th:if="${adoption.status == 0}">待审核</span>
+                            <span class="badge badge-success" th:if="${adoption.status == 1}">已通过</span>
+                            <span class="badge badge-danger" th:if="${adoption.status == 2}">已拒绝</span>
+                            <span class="badge badge-secondary" th:if="${adoption.status == 3}">已取消</span>
+                        </span>
+                    </div>
+                    <div class="info-row" th:if="${adoption.reviewComment != null and adoption.reviewComment != ''}">
+                        <span class="label">审核意见</span><span class="value" th:text="${adoption.reviewComment}"></span>
+                    </div>
+                    <div class="info-row" th:if="${adoption.reviewTime != null}">
+                        <span class="label">审核时间</span><span class="value" th:text="${#temporals.format(adoption.reviewTime, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+                </div>
+                <div style="margin-top:24px" th:if="${adoption.status == 0}">
+                    <button class="btn btn-success" th:onclick="'reviewAdoption(' + ${adoption.id} + ', 1)'">通过申请</button>
+                    <button class="btn btn-danger" style="margin-left:10px" th:onclick="'reviewAdoption(' + ${adoption.id} + ', 2)'">拒绝申请</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function reviewAdoption(id, status) {
+    var msg = status === 1 ? '确定通过该领养申请？' : '确定拒绝该领养申请？';
+    var comment = status === 1 ? '审核通过' : prompt('请输入拒绝原因：', '');
+    if (comment === null) return;
+    confirmAction(msg, function() {
+        ajaxPost('/admin/adoption/review', {id: id, status: status, reviewComment: comment}, function(res) {
+            if (res.code === 200) { showToast('审核成功'); setTimeout(function(){ window.location.href = '/admin/adoption/list'; }, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+</script>
+</body>
+</html>

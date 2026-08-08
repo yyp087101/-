@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('宠物管理 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128054; 宠物管理</span>
+                <div style="display:flex;gap:10px;align-items:center">
+                    <form class="form-inline" method="get" th:action="@{/admin/pet/list}">
+                        <select name="type" class="form-control">
+                            <option value="">全部类型</option>
+                            <option value="猫" th:selected="${type == '猫'}">猫</option>
+                            <option value="狗" th:selected="${type == '狗'}">狗</option>
+                            <option value="仓鼠" th:selected="${type == '仓鼠'}">仓鼠</option>
+                            <option value="兔子" th:selected="${type == '兔子'}">兔子</option>
+                            <option value="其他" th:selected="${type == '其他'}">其他</option>
+                        </select>
+                        <select name="status" class="form-control">
+                            <option value="">全部状态</option>
+                            <option value="0" th:selected="${status != null and status == 0}">待领养</option>
+                            <option value="1" th:selected="${status != null and status == 1}">已领养</option>
+                            <option value="2" th:selected="${status != null and status == 2}">已下架</option>
+                        </select>
+                        <input type="text" name="keyword" class="form-control" placeholder="搜索名称/品种" th:value="${keyword}">
+                        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+                    </form>
+                    <a th:href="@{/admin/pet/add}" class="btn btn-success btn-sm">添加宠物</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>图片</th>
+                            <th>名称</th>
+                            <th>类型</th>
+                            <th>品种</th>
+                            <th>年龄</th>
+                            <th>性别</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="pet : ${page.records}">
+                            <td th:text="${pet.id}"></td>
+                            <td>
+                                <img th:if="${pet.image != null and pet.image != ''}" th:src="${pet.image}" style="width:50px;height:50px;object-fit:cover;border-radius:6px">
+                                <span th:if="${pet.image == null or pet.image == ''}" style="font-size:24px">&#128062;</span>
+                            </td>
+                            <td th:text="${pet.name}"></td>
+                            <td th:text="${pet.type}"></td>
+                            <td th:text="${pet.breed}"></td>
+                            <td th:text="${pet.age}"></td>
+                            <td th:text="${pet.gender == 1} ? '公' : '母'"></td>
+                            <td>
+                                <span class="badge badge-success" th:if="${pet.status == 0}">待领养</span>
+                                <span class="badge badge-info" th:if="${pet.status == 1}">已领养</span>
+                                <span class="badge badge-secondary" th:if="${pet.status == 2}">已下架</span>
+                            </td>
+                            <td th:text="${pet.createTime != null} ? ${#temporals.format(pet.createTime, 'yyyy-MM-dd')} : '-'"></td>
+                            <td>
+                                <a th:href="@{'/admin/pet/edit/' + ${pet.id}}" class="btn btn-sm btn-primary">编辑</a>
+                                <button th:if="${pet.status == 0}" class="btn btn-sm btn-warning" th:onclick="'updatePetStatus(' + ${pet.id} + ', 2)'">下架</button>
+                                <button th:if="${pet.status == 2}" class="btn btn-sm btn-success" th:onclick="'updatePetStatus(' + ${pet.id} + ', 0)'">上架</button>
+                                <button class="btn btn-sm btn-danger" th:onclick="'deletePet(' + ${pet.id} + ')'">删除</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="common/header :: pagination(${page}, '/admin/pet/list?keyword=' + (${keyword} ?: '') + '&type=' + (${type} ?: '') + '&status=' + (${status} ?: ''))"></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function updatePetStatus(id, status) {
+    var msg = status === 2 ? '确定下架该宠物？' : '确定上架该宠物？';
+    confirmAction(msg, function() {
+        ajaxPost('/admin/pet/status', {id: id, status: status}, function(res) {
+            if (res.code === 200) { showToast('操作成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+function deletePet(id) {
+    confirmAction('确定删除该宠物信息？', function() {
+        ajaxPost('/admin/pet/delete/' + id, {}, function(res) {
+            if (res.code === 200) { showToast('删除成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('留言反馈 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+<div class="main-content">
+    <div class="card">
+        <div class="card-header">
+            <span>&#128172; 留言反馈</span>
+            <button class="btn btn-primary btn-sm" onclick="openModal('feedbackModal')">发表留言</button>
+        </div>
+        <div class="card-body">
+            <div th:if="${page.records != null and !page.records.isEmpty()}">
+                <div th:each="fb : ${page.records}" style="padding:16px 0;border-bottom:1px solid #f0f0f0">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <span style="font-weight:600" th:text="${fb.user != null ? fb.user.realname : '匿名'}"></span>
+                        <span style="color:#aaa;font-size:13px" th:text="${#temporals.format(fb.createTime, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+                    <p th:if="${fb.title != null and fb.title != ''}" style="font-weight:500;margin-bottom:4px" th:text="${fb.title}"></p>
+                    <p style="color:#555;line-height:1.6" th:text="${fb.content}"></p>
+                    <div th:if="${fb.reply != null and fb.reply != ''}" style="background:#f8f9fc;padding:12px 16px;border-radius:8px;margin-top:10px">
+                        <span style="color:var(--primary);font-weight:500">管理员回复：</span>
+                        <span style="color:#555" th:text="${fb.reply}"></span>
+                        <span style="color:#aaa;font-size:12px;margin-left:10px" th:if="${fb.replyTime != null}" th:text="${#temporals.format(fb.replyTime, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${page.records == null or page.records.isEmpty()}">
+                <div class="empty-icon">&#128172;</div>
+                <p>暂无留言</p>
+            </div>
+            <div th:replace="common/header :: pagination(${page}, '/feedback/list?x=1')"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="feedbackModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>&#128172; 发表留言</span>
+            <button class="close-btn" onclick="closeModal('feedbackModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label>标题</label>
+                    <input type="text" class="form-control" name="title" placeholder="请输入留言标题（选填）">
+                </div>
+                <div class="form-group">
+                    <label>内容 *</label>
+                    <textarea class="form-control" name="content" rows="4" placeholder="请输入留言内容" required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('feedbackModal')">取消</button>
+            <button class="btn btn-primary" onclick="submitFeedback()">提交</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+function submitFeedback() {
+    var data = serializeForm('feedbackForm');
+    if (!data.content) { showToast('请输入留言内容', 'error'); return; }
+    ajaxPost('/feedback/add', data, function(res) {
+        if (res.code === 200) {
+            showToast(res.msg);
+            closeModal('feedbackModal');
+            setTimeout(function() { location.reload(); }, 1000);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+</script>
+</body>
+</html>

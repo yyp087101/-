@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('用户管理 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128101; 用户管理</span>
+                <form class="form-inline" method="get" th:action="@{/admin/user/list}">
+                    <input type="text" name="keyword" class="form-control" placeholder="搜索用户名/姓名/手机号" th:value="${keyword}">
+                    <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>手机号</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${page.records}">
+                            <td th:text="${user.id}"></td>
+                            <td th:text="${user.username}"></td>
+                            <td th:text="${user.realname}"></td>
+                            <td th:text="${user.phone}"></td>
+                            <td th:text="${user.email}"></td>
+                            <td>
+                                <span class="badge badge-danger" th:if="${user.role == 1}">管理员</span>
+                                <span class="badge badge-info" th:if="${user.role == 0}">普通用户</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-success" th:if="${user.status == 1}">正常</span>
+                                <span class="badge badge-secondary" th:if="${user.status == 0}">禁用</span>
+                            </td>
+                            <td th:text="${user.createTime != null} ? ${#temporals.format(user.createTime, 'yyyy-MM-dd')} : '-'"></td>
+                            <td th:if="${user.role != 1}">
+                                <button th:if="${user.status == 1}" class="btn btn-sm btn-warning" th:onclick="'toggleStatus(' + ${user.id} + ', 0)'">禁用</button>
+                                <button th:if="${user.status == 0}" class="btn btn-sm btn-success" th:onclick="'toggleStatus(' + ${user.id} + ', 1)'">启用</button>
+                                <button class="btn btn-sm btn-info" th:onclick="'resetPwd(' + ${user.id} + ')'">重置密码</button>
+                                <button class="btn btn-sm btn-danger" th:onclick="'deleteUser(' + ${user.id} + ')'">删除</button>
+                            </td>
+                            <td th:if="${user.role == 1}"><span style="color:#aaa">-</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="common/header :: pagination(${page}, '/admin/user/list?keyword=' + (${keyword} ?: ''))"></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function toggleStatus(id, status) {
+    var msg = status === 1 ? '确定启用该用户？' : '确定禁用该用户？';
+    confirmAction(msg, function() {
+        ajaxPost('/admin/user/status', {id: id, status: status}, function(res) {
+            if (res.code === 200) { showToast('操作成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+function resetPwd(id) {
+    confirmAction('确定将该用户密码重置为123456？', function() {
+        ajaxPost('/admin/user/resetPassword/' + id, {}, function(res) {
+            if (res.code === 200) { showToast(res.msg); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+function deleteUser(id) {
+    confirmAction('确定删除该用户？此操作不可恢复！', function() {
+        ajaxPost('/admin/user/delete/' + id, {}, function(res) {
+            if (res.code === 200) { showToast('删除成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+</script>
+</body>
+</html>

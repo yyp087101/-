@@ -1,0 +1,234 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('宠物领养 - 给每只宠物一个温暖的家')"></head>
+<body style="background:#fff">
+<nav th:replace="common/header :: navbar"></nav>
+<!-- ===== 英雄区域 ===== -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <div class="hero-tag">🐾 让爱回家 · 领养代替购买</div>
+            <h1>给每只宠物<br>找到<span class="highlight">温暖的家</span></h1>
+            <p>我们致力于连接每一只等待被爱的毛孩子与充满爱心的家庭，让流浪动物重获幸福生活。</p>
+            <div class="hero-btns">
+                <a th:href="@{/pet/list}" class="btn btn-primary btn-lg">🐾 立即领养</a>
+                <a th:href="@{/notice/list}" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.3)">了解更多</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hstat">
+                    <div class="hstat-num" id="countPet">200+</div>
+                    <div class="hstat-label">🐶 待领养宠物</div>
+                </div>
+                <div class="hstat">
+                    <div class="hstat-num" id="countUser">500+</div>
+                    <div class="hstat-label">👨‍👩‍👧 注册用户</div>
+                </div>
+                <div class="hstat">
+                    <div class="hstat-num" id="countAdopted">100+</div>
+                    <div class="hstat-label">❤️ 成功领养</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image-wrap">
+            <div class="hero-pets-grid">
+                <div class="hero-pet-img">
+                    <img src="/images/dog.jpg" alt="dog">
+                </div>
+                <div class="hero-pet-img">
+                    <img src="/images/cat.jpg" alt="cat">
+                </div>
+                <div class="hero-pet-img">
+                    <img src="/images/puppy.jpg" alt="puppy">
+                </div>
+                <div class="hero-pet-img">
+                    <img src="/images/kitten.jpg" alt="kitten">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 特色服务区 ===== -->
+<section class="section" style="background:#fff">
+    <h2 class="section-title">为什么选择<span class="accent">宠物领养</span></h2>
+    <p class="section-sub">我们提供专业、透明、有爱的宠物领养平台</p>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🏥</div>
+            <h3>健康保障</h3>
+            <p>每只宠物均经过健康检查，接种疫苗，确保您领养到健康活泼的毛孩子</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>规范流程</h3>
+            <p>标准化的领养申请与审核流程，确保每只宠物都能找到最合适的家庭</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💝</div>
+            <h3>爱心守护</h3>
+            <p>专业团队提供领养前后的全程指导，让您与宠物顺利度过磨合期</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>信息透明</h3>
+            <p>每只宠物详细的健康档案、性格描述，帮助您找到最适合的伴侣</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 领养流程 ===== -->
+<section class="section" style="background:linear-gradient(135deg,#fff8f3,#fff0e6)">
+    <h2 class="section-title">领养<span class="accent">四步走</span></h2>
+    <p class="section-sub">简单流程，让每次领养都充满温度</p>
+    <div class="steps-wrap">
+        <div class="step-item">
+            <div class="step-num">🔍</div>
+            <h3>浏览宠物</h3>
+            <p>在宠物中心挑选心仪的毛孩子</p>
+        </div>
+        <div class="step-item">
+            <div class="step-num">📝</div>
+            <h3>提交申请</h3>
+            <p>填写领养申请表，说明您的情况</p>
+        </div>
+        <div class="step-item">
+            <div class="step-num">✅</div>
+            <h3>审核通过</h3>
+            <p>工作人员审核，确保领养条件合适</p>
+        </div>
+        <div class="step-item">
+            <div class="step-num">🏠</div>
+            <h3>带回家</h3>
+            <p>完成领养，给毛孩子一个温暖的家</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 推荐宠物 ===== -->
+<section class="section home-pets-section">
+    <h2 class="section-title">等待<span class="accent">领养</span>的毛孩子</h2>
+    <p class="section-sub">它们都在期待一个属于自己的家，你会是它们的缘分吗？</p>
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+        <div class="pet-grid" id="homePetGrid">
+            <!-- 占位卡片 -->
+            <div class="pet-card" th:each="pet : ${pets}" th:if="${pets != null}">
+                <div class="pet-image">
+                    <img th:if="${pet.image != null and pet.image != ''}" th:src="${pet.image}" th:alt="${pet.name}">
+                    <span th:if="${pet.image == null or pet.image == ''}">🐾</span>
+                    <div class="pet-type-badge" th:text="${pet.type}"></div>
+                </div>
+                <div class="pet-info">
+                    <h3 th:text="${pet.name}">宠物名</h3>
+                    <div class="pet-meta">
+                        <span class="meta-item">🦴 <span th:text="${pet.breed}"></span></span>
+                        <span class="meta-item">📅 <span th:text="${pet.age}"></span></span>
+                        <span class="meta-item" th:text="${pet.gender == 1} ? '♂️ 公' : '♀️ 母'"></span>
+                    </div>
+                </div>
+                <div class="pet-actions">
+                    <a th:href="@{'/pet/detail/' + ${pet.id}}" class="btn btn-primary btn-block">查看详情 →</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${pets == null or pets.isEmpty()}" id="homePetLoading" style="text-align:center;padding:40px 0">
+            <div style="font-size:60px;margin-bottom:12px">🐾</div>
+            <p style="color:#aaa">正在加载宠物数据...</p>
+        </div>
+        <div style="text-align:center;margin-top:40px">
+            <a th:href="@{/pet/list}" class="btn btn-primary btn-lg">查看全部待领养宠物 →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 公告 + 数据统计 ===== -->
+<section class="section" style="background:#fff">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:40px;flex-wrap:wrap">
+        <!-- 最新公告 -->
+        <div>
+            <h2 class="section-title" style="text-align:left;font-size:24px;margin-bottom:24px">📢 最新公告</h2>
+            <div id="noticeList">
+                <div th:each="notice : ${notices}" th:if="${notices != null}" class="notice-item-home">
+                    <div class="notice-dot"></div>
+                    <a th:href="@{'/notice/detail/' + ${notice.id}}" th:text="${notice.title}"></a>
+                    <span class="date" th:text="${#temporals.format(notice.createTime, 'MM-dd')}"></span>
+                </div>
+                <div th:if="${notices == null or notices.isEmpty()}" style="color:#aaa;padding:20px 0">暂无公告</div>
+            </div>
+            <a th:href="@{/notice/list}" class="btn btn-outline" style="margin-top:20px">查看全部公告</a>
+        </div>
+        <!-- 平台介绍 -->
+        <div style="display:flex;flex-direction:column;justify-content:center">
+            <h2 style="font-size:28px;font-weight:800;color:var(--dark);margin-bottom:16px">关于<span style="color:var(--primary)">宠物领养</span></h2>
+            <p style="color:#666;line-height:1.9;margin-bottom:20px;font-size:15px">宠物领养平台专注于流浪动物救助领养工作，连接爱心家庭与流浪宠物。我们相信每只动物都值得被爱，都应该有一个温暖的家。</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div style="background:var(--primary-light);border-radius:12px;padding:18px;text-align:center">
+                    <div style="font-size:32px;font-weight:800;color:var(--primary)">2年+</div>
+                    <div style="font-size:13px;color:#666;margin-top:4px">运营年限</div>
+                </div>
+                <div style="background:#e8faf4;border-radius:12px;padding:18px;text-align:center">
+                    <div style="font-size:32px;font-weight:800;color:var(--success)">99%</div>
+                    <div style="font-size:13px;color:#666;margin-top:4px">满意率</div>
+                </div>
+                <div style="background:#fff3e0;border-radius:12px;padding:18px;text-align:center">
+                    <div style="font-size:32px;font-weight:800;color:var(--warning)">24h</div>
+                    <div style="font-size:13px;color:#666;margin-top:4px">响应服务</div>
+                </div>
+                <div style="background:#e8f4fd;border-radius:12px;padding:18px;text-align:center">
+                    <div style="font-size:32px;font-weight:800;color:var(--info)">0元</div>
+                    <div style="font-size:13px;color:#666;margin-top:4px">免费领养</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 行动号召 ===== -->
+<section style="background:linear-gradient(135deg,#1a1a2e,#0f3460);padding:80px 0;text-align:center">
+    <div style="position:relative;z-index:1">
+        <h2 style="font-size:36px;font-weight:800;color:#fff;margin-bottom:16px">准备好迎接你的毛孩子了吗？</h2>
+        <p style="color:rgba(255,255,255,0.7);font-size:16px;margin-bottom:36px">注册账号，立即开始你与宠物的缘分之旅</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+            <a th:href="@{/register}" class="btn btn-primary btn-lg">🐾 免费注册</a>
+            <a th:href="@{/pet/list}" class="btn btn-lg" style="background:rgba(255,255,255,0.12);color:#fff;border:2px solid rgba(255,255,255,0.25)">浏览宠物 →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="brand-logo">🐾 宠物领养</div>
+            <p>我们致力于为每一只流浪动物找到爱它的家庭，让领养代替购买，让爱没有流浪。</p>
+        </div>
+        <div class="footer-col">
+            <h4>快速导航</h4>
+            <a th:href="@{/pet/list}">🐶 宠物中心</a>
+            <a th:href="@{/notice/list}">📢 公告信息</a>
+            <a th:href="@{/feedback/list}">💬 留言反馈</a>
+        </div>
+        <div class="footer-col">
+            <h4>用户中心</h4>
+            <a th:href="@{/register}">📝 免费注册</a>
+            <a th:href="@{/login}">🔑 用户登录</a>
+            <a th:href="@{/adoption/my}">📋 我的领养</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2024 宠物领养平台 · 让爱回家 · 领养代替购买 🐾
+    </div>
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    var petGrid = document.getElementById('homePetGrid');
+    if (petGrid && petGrid.children.length === 0) {
+        document.getElementById('homePetLoading').style.display = 'block';
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('公告详情 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+<div class="main-content">
+    <div class="card">
+        <div class="card-header">
+            <span>&#128227; 公告详情</span>
+            <a href="javascript:history.back()" class="btn btn-sm btn-outline">返回</a>
+        </div>
+        <div class="card-body">
+            <h2 style="margin-bottom:12px" th:text="${notice.title}"></h2>
+            <p style="color:#aaa;font-size:13px;margin-bottom:24px"
+               th:text="'发布时间：' + ${#temporals.format(notice.createTime, 'yyyy-MM-dd HH:mm')}"></p>
+            <div style="line-height:2;font-size:15px;color:#444" th:utext="${notice.content}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/common.js}"></script>
+</body>
+</html>

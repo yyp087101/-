@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">宠物领养管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<!-- 前台导航 -->
+<nav class="navbar" th:fragment="navbar">
+    <a th:href="@{/index}" class="brand">
+        <div class="brand-icon">&#128062;</div>
+        <div class="brand-text">
+            <span>宠物领养</span>
+            <span class="brand-sub">PET ADOPTION</span>
+        </div>
+    </a>
+    <ul class="nav-links">
+        <li><a th:href="@{/index}">🏠 首页</a></li>
+        <li><a th:href="@{/pet/list}">🐾 宠物中心</a></li>
+        <li><a th:href="@{/notice/list}">📢 公告</a></li>
+        <li th:if="${session.loginUser != null}"><a th:href="@{/adoption/my}">📋 我的领养</a></li>
+        <li th:if="${session.loginUser != null}"><a th:href="@{/feedback/list}">💬 留言</a></li>
+        <li th:if="${session.loginUser != null and session.loginUser.role == 1}">
+            <a th:href="@{/admin/index}" style="color:#FFB800;font-weight:700">⚙️ 管理后台</a>
+        </li>
+    </ul>
+    <div class="user-info">
+        <th:block th:if="${session.loginUser != null}">
+            <div class="user-avatar" th:text="${session.loginUser.realname != null and session.loginUser.realname != '' ? session.loginUser.realname.substring(0,1) : session.loginUser.username.substring(0,1)}"></div>
+            <span class="user-name" th:text="${session.loginUser.realname != null and session.loginUser.realname != '' ? session.loginUser.realname : session.loginUser.username}"></span>
+            <a th:href="@{/user/profile}" class="btn-logout">👤 个人中心</a>
+            <a th:href="@{/logout}" class="btn-logout">退出</a>
+        </th:block>
+        <th:block th:if="${session.loginUser == null}">
+            <a th:href="@{/login}" class="btn-logout">登录</a>
+            <a th:href="@{/register}" class="btn-logout" style="background:var(--primary);border-color:var(--primary);color:#fff">免费注册</a>
+        </th:block>
+    </div>
+</nav>
+
+<!-- 管理后台导航 -->
+<nav class="navbar" th:fragment="admin-navbar">
+    <a href="/admin/index" class="brand">
+        <div class="brand-icon">⚙️</div>
+        <div class="brand-text">
+            <span>管理后台</span>
+            <span class="brand-sub">ADMIN PANEL</span>
+        </div>
+    </a>
+    <div class="user-info">
+        <div class="user-avatar">👑</div>
+        <span class="user-name" th:text="${session.loginUser.realname}"></span>
+        <a th:href="@{/index}" class="btn-logout">🏠 前台首页</a>
+        <a th:href="@{/logout}" class="btn-logout">退出</a>
+    </div>
+</nav>
+
+<!-- 管理后台侧边栏 -->
+<aside class="admin-sidebar" th:fragment="admin-sidebar">
+    <div class="sidebar-logo">
+        <span>🐾</span>
+        <span>宠物领养系统</span>
+    </div>
+    <div class="menu-title">数据总览</div>
+    <a th:href="@{/admin/index}" class="menu-item">
+        <span class="menu-icon">📊</span><span>系统首页</span>
+    </a>
+    <div class="menu-title">用户管理</div>
+    <a th:href="@{/admin/user/list}" class="menu-item">
+        <span class="menu-icon">👥</span><span>用户管理</span>
+    </a>
+    <div class="menu-title">业务管理</div>
+    <a th:href="@{/admin/pet/list}" class="menu-item">
+        <span class="menu-icon">🐾</span><span>宠物管理</span>
+    </a>
+    <a th:href="@{/admin/adoption/list}" class="menu-item">
+        <span class="menu-icon">📋</span><span>领养审核</span>
+    </a>
+    <div class="menu-title">内容管理</div>
+    <a th:href="@{/admin/notice/list}" class="menu-item">
+        <span class="menu-icon">📢</span><span>公告管理</span>
+    </a>
+    <a th:href="@{/admin/feedback/list}" class="menu-item">
+        <span class="menu-icon">💬</span><span>反馈管理</span>
+    </a>
+</aside>
+
+<!-- 分页组件 -->
+<div th:fragment="pagination(page, url)" class="pagination">
+    <a th:if="${page.current > 1}" th:href="${url + '&pageNum=' + (page.current - 1)}">上一页</a>
+    <span th:if="${page.current <= 1}" class="disabled">上一页</span>
+    <th:block th:each="i : ${#numbers.sequence(1, page.pages > 0 ? page.pages : 1)}">
+        <span th:if="${i == page.current}" class="active" th:text="${i}"></span>
+        <a th:if="${i != page.current}" th:href="${url + '&pageNum=' + i}" th:text="${i}"></a>
+    </th:block>
+    <a th:if="${page.current < page.pages}" th:href="${url + '&pageNum=' + (page.current + 1)}">下一页</a>
+    <span th:if="${page.current >= page.pages}" class="disabled">下一页</span>
+    <span style="margin-left:10px;color:#888;font-size:13px" th:text="'共 ' + ${page.total} + ' 条'"></span>
+</div>
+
+</body>
+</html>

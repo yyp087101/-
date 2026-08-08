@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('宠物详情 - 宠物领养')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+
+<!-- 面包屑 -->
+<div style="background:#fff;border-bottom:1px solid #f5f5f5;padding:12px 0">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;font-size:13px;color:#999;display:flex;align-items:center;gap:8px">
+        <a th:href="@{/index}" style="color:#999">🏠 首页</a> <span>›</span>
+        <a th:href="@{/pet/list}" style="color:#999">宠物中心</a> <span>›</span>
+        <span style="color:var(--primary)" th:text="${pet.name}">宠物详情</span>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="card">
+        <div class="card-body">
+            <div class="detail-header">
+                <!-- 左侧图片 -->
+                <div class="detail-image" style="position:relative">
+                    <img th:if="${pet.image != null and pet.image != ''}" th:src="${pet.image}" th:alt="${pet.name}">
+                    <span th:if="${pet.image == null or pet.image == ''}"
+                          style="font-size:100px"
+                          th:text="${pet.type == '猫'} ? '🐱' : (${pet.type == '狗'} ? '🐶' : (${pet.type == '仓鼠'} ? '🐹' : (${pet.type == '兔子'} ? '🐰' : '🐾')))"></span>
+                    <!-- 状态角标 -->
+                    <div style="position:absolute;top:16px;right:16px">
+                        <span class="badge badge-success" style="font-size:13px;padding:6px 14px" th:if="${pet.status == 0}">✅ 待领养</span>
+                        <span class="badge badge-info" style="font-size:13px;padding:6px 14px" th:if="${pet.status == 1}">💙 已领养</span>
+                        <span class="badge badge-secondary" style="font-size:13px;padding:6px 14px" th:if="${pet.status == 2}">⬇️ 已下架</span>
+                    </div>
+                </div>
+                <!-- 右侧信息 -->
+                <div class="detail-info">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                        <h2 style="margin:0" th:text="${pet.name}">宠物名</h2>
+                        <span style="font-size:28px"
+                              th:text="${pet.type == '猫'} ? '🐱' : (${pet.type == '狗'} ? '🐶' : (${pet.type == '仓鼠'} ? '🐹' : (${pet.type == '兔子'} ? '🐰' : '🐾')))"></span>
+                    </div>
+                    <p style="color:var(--gray);font-size:14px;margin-bottom:20px" th:text="'#' + ${pet.id} + ' · ' + ${pet.type} + ' · 发布于 ' + (${pet.createTime != null} ? ${#temporals.format(pet.createTime,'yyyy-MM-dd')} : '未知')"></p>
+
+                    <!-- 快速标签 -->
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px">
+                        <span style="background:#fff0eb;color:var(--primary);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600" th:text="'🦴 ' + (${pet.breed != null and pet.breed != ''} ? pet.breed : '未知品种')"></span>
+                        <span style="background:#fff0eb;color:var(--primary);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600" th:text="'📅 ' + (${pet.age != null and pet.age != ''} ? pet.age : '年龄未知')"></span>
+                        <span style="background:#e8faf4;color:var(--success);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600" th:text="${pet.gender == 1} ? '♂ 公' : '♀ 母'"></span>
+                        <span style="background:#e8f4fd;color:var(--info);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600" th:if="${pet.weight != null}" th:text="'⚖️ ' + ${pet.weight} + ' kg'"></span>
+                    </div>
+
+                    <div class="info-row"><span class="label">🎨 颜色</span><span class="value" th:text="${pet.color != null and pet.color != '' ? pet.color : '未填写'}"></span></div>
+                    <div class="info-row"><span class="label">💊 健康状况</span><span class="value" th:text="${pet.healthStatus != null and pet.healthStatus != '' ? pet.healthStatus : '健康'}"></span></div>
+
+                    <!-- 领养按钮 -->
+                    <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap" th:if="${pet.status == 0}">
+                        <button class="btn btn-primary btn-lg" onclick="openModal('adoptModal')">❤️ 我想领养它</button>
+                        <a th:href="@{/pet/list}" class="btn btn-outline btn-lg">← 返回列表</a>
+                    </div>
+                    <div style="margin-top:28px" th:if="${pet.status != 0}">
+                        <div style="background:#f8f9fa;border-radius:12px;padding:16px 20px;color:#999;font-size:14px;margin-bottom:16px">
+                            😔 这只宠物目前 <strong th:text="${pet.status == 1} ? '已被领养' : '暂时下架'"></strong>，不接受申请
+                        </div>
+                        <a th:href="@{/pet/list}" class="btn btn-outline">查看其他宠物 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 宠物介绍 -->
+            <div style="margin-top:36px;padding-top:28px;border-top:1px solid #f5f5f5" th:if="${pet.description != null and pet.description != ''}">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;color:var(--dark)">📖 关于 <span th:text="${pet.name}" style="color:var(--primary)"></span></h3>
+                <div style="background:linear-gradient(135deg,#fff8f3,#fff0e6);border-radius:14px;padding:24px;line-height:1.9;color:#555;font-size:15px;border-left:4px solid var(--primary)" th:text="${pet.description}"></div>
+            </div>
+
+            <!-- 温馨提示 -->
+            <div style="margin-top:24px;background:#f0fff8;border-radius:14px;padding:20px 24px;border:1px solid #b8f0d8">
+                <h4 style="color:var(--success);margin-bottom:12px;font-size:15px">💚 领养须知</h4>
+                <ul style="color:#555;font-size:14px;line-height:2;padding-left:20px">
+                    <li>请确保您有稳定的居住环境和时间照料宠物</li>
+                    <li>领养是一辈子的承诺，请认真考虑后再申请</li>
+                    <li>工作人员会在1-3个工作日内审核您的申请</li>
+                    <li>如有疑问，欢迎通过留言反馈联系我们</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 领养申请弹窗 -->
+<div class="modal-overlay" id="adoptModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>&#128220; 申请领养</span>
+            <button class="close-btn" onclick="closeModal('adoptModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="adoptForm">
+                <input type="hidden" name="petId" th:value="${pet.id}">
+                <div class="form-group">
+                    <label>领养理由 *</label>
+                    <textarea class="form-control" name="reason" rows="4" placeholder="请描述您的领养理由" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>居住地址 *</label>
+                    <input type="text" class="form-control" name="address" placeholder="请输入您的居住地址" required>
+                </div>
+                <div class="form-group">
+                    <label>养宠经验</label>
+                    <input type="text" class="form-control" name="experience" placeholder="请描述您的养宠经验（选填）">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('adoptModal')">取消</button>
+            <button class="btn btn-primary" onclick="submitAdopt()">提交申请</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+function submitAdopt() {
+    var data = serializeForm('adoptForm');
+    if (!data.reason || !data.address) { showToast('请填写完整信息', 'error'); return; }
+    ajaxPost('/adoption/apply', data, function(res) {
+        if (res.code === 200) {
+            showToast(res.msg);
+            closeModal('adoptModal');
+            setTimeout(function() { window.location.href = '/adoption/my'; }, 1500);
+        } else {
+            showToast(res.msg, 'error');
+        }
+    });
+}
+</script>
+</body>
+</html>

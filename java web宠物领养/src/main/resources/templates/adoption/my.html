@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('我的领养申请 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: navbar"></nav>
+<div class="main-content">
+    <div class="card">
+        <div class="card-header">
+            <span>&#128220; 我的领养申请</span>
+            <form class="form-inline" method="get" th:action="@{/adoption/my}">
+                <select name="status" class="form-control">
+                    <option value="">全部状态</option>
+                    <option value="0" th:selected="${status != null and status == 0}">待审核</option>
+                    <option value="1" th:selected="${status != null and status == 1}">已通过</option>
+                    <option value="2" th:selected="${status != null and status == 2}">已拒绝</option>
+                    <option value="3" th:selected="${status != null and status == 3}">已取消</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">筛选</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper" th:if="${page.records != null and !page.records.isEmpty()}">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>宠物名称</th>
+                        <th>宠物类型</th>
+                        <th>申请时间</th>
+                        <th>状态</th>
+                        <th>审核意见</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${page.records}">
+                        <td th:text="${item.pet != null} ? ${item.pet.name} : '未知'"></td>
+                        <td th:text="${item.pet != null} ? ${item.pet.type} : '未知'"></td>
+                        <td th:text="${#temporals.format(item.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="badge badge-warning" th:if="${item.status == 0}">待审核</span>
+                            <span class="badge badge-success" th:if="${item.status == 1}">已通过</span>
+                            <span class="badge badge-danger" th:if="${item.status == 2}">已拒绝</span>
+                            <span class="badge badge-secondary" th:if="${item.status == 3}">已取消</span>
+                        </td>
+                        <td th:text="${item.reviewComment ?: '-'}"></td>
+                        <td>
+                            <a th:href="@{'/adoption/detail/' + ${item.id}}" class="btn btn-sm btn-info">详情</a>
+                            <button th:if="${item.status == 0}" class="btn btn-sm btn-danger" th:onclick="'cancelAdoption(' + ${item.id} + ')'">取消</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state" th:if="${page.records == null or page.records.isEmpty()}">
+                <div class="empty-icon">&#128220;</div>
+                <p>暂无领养申请记录</p>
+            </div>
+            <div th:replace="common/header :: pagination(${page}, '/adoption/my?status=' + (${status} ?: ''))"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function cancelAdoption(id) {
+    confirmAction('确定要取消该领养申请吗？', function() {
+        ajaxPost('/adoption/cancel/' + id, {}, function(res) {
+            if (res.code === 200) {
+                showToast('已取消');
+                setTimeout(function() { location.reload(); }, 1000);
+            } else {
+                showToast(res.msg, 'error');
+            }
+        });
+    });
+}
+</script>
+</body>
+</html>

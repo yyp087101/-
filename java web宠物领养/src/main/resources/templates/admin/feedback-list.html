@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('反馈管理 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128172; 反馈管理</span>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>标题</th>
+                            <th>内容</th>
+                            <th>回复</th>
+                            <th>时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="fb : ${page.records}">
+                            <td th:text="${fb.id}"></td>
+                            <td th:text="${fb.user?.realname ?: fb.user?.username}"></td>
+                            <td th:text="${fb.title ?: '-'}"></td>
+                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" th:text="${fb.content}"></td>
+                            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                                <span th:if="${fb.reply != null}" th:text="${fb.reply}"></span>
+                                <span th:if="${fb.reply == null}" style="color:#aaa">未回复</span>
+                            </td>
+                            <td th:text="${#temporals.format(fb.createTime, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" th:attr="data-id=${fb.id},data-content=${fb.content},data-reply=${fb.reply}" onclick="showReplyModal(this)">回复</button>
+                                <button class="btn btn-sm btn-danger" th:onclick="'deleteFeedback(' + ${fb.id} + ')'">删除</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="common/header :: pagination(${page}, '/admin/feedback/list?x=1')"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="replyModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>&#128172; 回复留言</span>
+            <button class="close-btn" onclick="closeModal('replyModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="replyFeedbackId">
+            <div class="form-group">
+                <label>用户留言内容</label>
+                <p id="feedbackContent" style="background:#f8f9fc;padding:12px;border-radius:6px;color:#555"></p>
+            </div>
+            <div class="form-group">
+                <label>回复内容 *</label>
+                <textarea class="form-control" id="replyContent" rows="4" placeholder="请输入回复内容"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('replyModal')">取消</button>
+            <button class="btn btn-primary" onclick="doReply()">提交回复</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+function showReplyModal(btn) {
+    document.getElementById('replyFeedbackId').value = btn.getAttribute('data-id');
+    document.getElementById('feedbackContent').textContent = btn.getAttribute('data-content');
+    document.getElementById('replyContent').value = btn.getAttribute('data-reply') || '';
+    openModal('replyModal');
+}
+function doReply() {
+    var id = document.getElementById('replyFeedbackId').value;
+    var reply = document.getElementById('replyContent').value;
+    if (!reply) { showToast('请输入回复内容', 'error'); return; }
+    ajaxPost('/admin/feedback/reply', {id: id, reply: reply}, function(res) {
+        if (res.code === 200) { showToast('回复成功'); closeModal('replyModal'); setTimeout(function(){location.reload();}, 800); }
+        else { showToast(res.msg, 'error'); }
+    });
+}
+function deleteFeedback(id) {
+    confirmAction('确定删除该留言？', function() {
+        ajaxPost('/admin/feedback/delete/' + id, {}, function(res) {
+            if (res.code === 200) { showToast('删除成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+</script>
+</body>
+</html>

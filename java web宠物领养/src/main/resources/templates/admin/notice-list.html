@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header :: head('公告管理 - 宠物领养管理系统')"></head>
+<body>
+<nav th:replace="common/header :: admin-navbar"></nav>
+<div class="admin-layout">
+    <aside th:replace="common/header :: admin-sidebar"></aside>
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <span>&#128227; 公告管理</span>
+                <div style="display:flex;gap:10px;align-items:center">
+                    <form class="form-inline" method="get" th:action="@{/admin/notice/list}">
+                        <input type="text" name="keyword" class="form-control" placeholder="搜索公告标题" th:value="${keyword}">
+                        <button type="submit" class="btn btn-primary btn-sm">搜索</button>
+                    </form>
+                    <a th:href="@{/admin/notice/add}" class="btn btn-success btn-sm">发布公告</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>标题</th>
+                            <th>状态</th>
+                            <th>发布时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="notice : ${page.records}">
+                            <td th:text="${notice.id}"></td>
+                            <td th:text="${notice.title}"></td>
+                            <td>
+                                <span class="badge badge-success" th:if="${notice.status == 1}">已发布</span>
+                                <span class="badge badge-secondary" th:if="${notice.status == 0}">已下架</span>
+                            </td>
+                            <td th:text="${notice.createTime != null} ? ${#temporals.format(notice.createTime, 'yyyy-MM-dd HH:mm')} : '-'"></td>
+                            <td>
+                                <a th:href="@{'/admin/notice/edit/' + ${notice.id}}" class="btn btn-sm btn-primary">编辑</a>
+                                <button class="btn btn-sm btn-danger" th:onclick="'deleteNotice(' + ${notice.id} + ')'">删除</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="common/header :: pagination(${page}, '/admin/notice/list?keyword=' + (${keyword} ?: ''))"></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/common.js}"></script>
+<script>
+function deleteNotice(id) {
+    confirmAction('确定删除该公告？', function() {
+        ajaxPost('/admin/notice/delete/' + id, {}, function(res) {
+            if (res.code === 200) { showToast('删除成功'); setTimeout(function(){location.reload();}, 800); }
+            else { showToast(res.msg, 'error'); }
+        });
+    });
+}
+</script>
+</body>
+</html>
